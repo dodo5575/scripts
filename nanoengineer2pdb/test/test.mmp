@@ -1,0 +1,116 @@
+mmpformat 080327 required; 080529 preferred
+kelvin 300
+group (View Data)
+info opengroup open = True
+csys (HomeView) (1.000000, 0.000000, 0.000000, 0.000000) (10.000000) (0.000000, 0.000000, 0.000000) (1.000000)
+csys (LastView) (1.000000, 0.000000, 0.000000, 0.000000) (50.000000) (0.000000, 0.000000, 0.000000) (1.000000)
+egroup (View Data)
+group (test)
+info opengroup open = True
+group (DnaGroup2) DnaGroup
+info opengroup open = True
+group (DnaSegment3) DnaSegment
+info opengroup open = False
+info opengroup dnaSegment-parameters = 11.800, 3.180 
+forward_ref (1957413392) # DnaSegmentMarker (DnaMarker148)
+mol (DnaAxisChunk223) def
+atom 1 (300) (-31314, 7990, 0) def
+atom 2 (300) (-28134, 7990, 0) def
+bond1 1
+atom 3 (300) (-24954, 7990, 0) def
+bond1 2
+atom 4 (300) (-21774, 7990, 0) def
+bond1 3
+atom 5 (300) (-18594, 7990, 0) def
+bond1 4
+atom 6 (300) (-15414, 7990, 0) def
+bond1 5
+atom 7 (0) (-13824, 7990, 0) def
+bond1 6
+atom 8 (0) (-32904, 7990, 0) def
+bond1 1
+info chunk color = 128 128 128
+DnaSegmentMarker (DnaMarker148) (127, 127, 127) 1 2
+info leaf forwarded = 1957413392
+egroup (DnaSegment3)
+group (DnaStrand7) DnaStrand
+info opengroup open = True
+forward_ref (1957376688) # DnaStrandMarker (DnaMarker149)
+mol (DnaStrandChunk512) def
+atom 9 (301) (-31314, 16687, 0) def
+info atom dnaBaseName = A
+bond1 1
+atom 10 (301) (-28134, 15483, 4415) def
+info atom dnaBaseName = A
+bond1 2 9
+bond_direction 9 10
+atom 11 (301) (-24954, 12204, 7608) def
+info atom dnaBaseName = T
+bond1 3 10
+bond_direction 10 11
+atom 12 (301) (-21774, 7758, 8694) def
+info atom dnaBaseName = T
+bond1 4 11
+bond_direction 11 12
+atom 13 (301) (-18594, 3377, 7373) def
+info atom dnaBaseName = C
+bond1 5 12
+bond_direction 12 13
+atom 14 (301) (-15414, 272, 4010) def
+info atom dnaBaseName = G
+bond1 6 13
+bond_direction 13 14
+atom 15 (0) (-33098, 17362, -2476) def
+bond1 9
+bond_direction 15 9
+atom 16 (0) (-13631, -1468, 2124) def
+bond1 14
+bond_direction 14 16
+info chunk color = 153 0 51
+DnaStrandMarker (DnaMarker149) (127, 127, 127) 9 10
+info leaf forwarded = 1957376688
+egroup (DnaStrand7)
+group (DnaStrand8) DnaStrand
+info opengroup open = True
+forward_ref (1957377608) # DnaStrandMarker (DnaMarker150)
+mol (DnaStrandChunk513) def
+atom 17 (301) (-31314, 2059, 6361) def
+info atom dnaBaseName = T
+bond1 1
+atom 18 (301) (-28134, -349, 2469) def
+info atom dnaBaseName = T
+bond1 2 17
+bond_direction 18 17
+atom 19 (301) (-24954, -449, -2106) def
+info atom dnaBaseName = A
+bond1 3 18
+bond_direction 19 18
+atom 20 (301) (-21774, 1789, -6098) def
+info atom dnaBaseName = A
+bond1 4 19
+bond_direction 20 19
+atom 21 (301) (-18594, 5743, -8402) def
+info atom dnaBaseName = G
+bond1 5 20
+bond_direction 21 20
+atom 22 (301) (-15414, 10320, -8379) def
+info atom dnaBaseName = C
+bond1 6 21
+bond_direction 22 21
+atom 23 (0) (-33098, 3409, 8543) def
+bond1 17
+bond_direction 17 23
+atom 24 (0) (-13631, 12886, -8366) def
+bond1 22
+bond_direction 24 22
+info chunk color = 0 0 153
+DnaStrandMarker (DnaMarker150) (127, 127, 127) 17 18
+info leaf forwarded = 1957377608
+egroup (DnaStrand8)
+egroup (DnaGroup2)
+egroup (test)
+end1
+group (Clipboard)
+info opengroup open = False
+egroup (Clipboard)
+end molecular machine part test

@@ -1,0 +1,1 @@
+grep "\(IMPR\|DIHE\)" check.txt

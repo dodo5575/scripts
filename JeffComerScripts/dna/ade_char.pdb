@@ -1,0 +1,34 @@
+CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1
+ATOM      1  C4' ADE A   7       5.024   5.846 195.743  1.00  0.00      ADNA C
+ATOM      2  H4' ADE A   7       4.845   6.661 195.192  1.00  0.00      ADNA H
+ATOM      3  O4' ADE A   7       3.797   5.068 195.853  1.00  0.00      ADNA O
+ATOM      4  C1' ADE A   7       3.589   4.672 197.200  1.00  0.00      ADNA C
+ATOM      5  H1' ADE A   7       2.777   5.163 197.515  1.00  0.00      ADNA H
+ATOM      6  C2' ADE A   7       4.795   5.134 198.012  1.00  0.00      ADNA C
+ATOM      7  H2' ADE A   7       4.477   5.482 198.894  1.00  0.00      ADNA H
+ATOM      8 H2'' ADE A   7       5.481   4.406 198.015  1.00  0.00      ADNA H
+ATOM      9  P   ADE A   7       8.289   3.778 195.852  1.00  0.00      ADNA P
+ATOM     10  O1P ADE A   7       8.596   2.553 196.624  1.00  0.00      ADNA O
+ATOM     11  O2P ADE A   7       9.180   4.933 196.100  1.00  0.00      ADNA O
+ATOM     12  O5' ADE A   7       6.768   4.204 196.098  1.00  0.00      ADNA O
+ATOM     13  C5' ADE A   7       6.092   4.987 195.097  1.00  0.00      ADNA C
+ATOM     14  H5' ADE A   7       5.599   4.372 194.481  1.00  0.00      ADNA H
+ATOM     15 H5'' ADE A   7       6.742   5.632 194.695  1.00  0.00      ADNA H
+ATOM     16  N9  ADE A   7       3.383   3.197 197.221  1.00  0.00      ADNA N
+ATOM     17  C5  ADE A   7       2.443   1.217 197.239  1.00  0.00      ADNA C
+ATOM     18  N7  ADE A   7       3.814   0.998 197.262  1.00  0.00      ADNA N
+ATOM     19  C8  ADE A   7       4.322   2.191 197.250  1.00  0.00      ADNA C
+ATOM     20  H8  ADE A   7       5.319   2.120 197.265  1.00  0.00      ADNA H
+ATOM     21  N1  ADE A   7       0.117   0.891 197.210  1.00  0.00      ADNA N
+ATOM     22  C2  ADE A   7       0.003   2.225 197.188  1.00  0.00      ADNA C
+ATOM     23  H2  ADE A   7      -0.884   2.686 197.169  1.00  0.00      ADNA H
+ATOM     24  N3  ADE A   7       0.955   3.130 197.187  1.00  0.00      ADNA N
+ATOM     25  C4  ADE A   7       2.174   2.554 197.213  1.00  0.00      ADNA C
+ATOM     26  C6  ADE A   7       1.346   0.343 197.237  1.00  0.00      ADNA C
+ATOM     27  N6  ADE A   7       1.463  -0.993 197.260  1.00  0.00      ADNA N
+ATOM     28  H61 ADE A   7       0.626  -1.558 197.257  1.00  0.00      ADNA H
+ATOM     29  H62 ADE A   7       2.371  -1.435 197.281  1.00  0.00      ADNA H
+ATOM     30  C3' ADE A   7       5.312   6.302 197.173  1.00  0.00      ADNA C
+ATOM     31  H3' ADE A   7       6.302   6.370 197.300  1.00  0.00      ADNA H
+ATOM     32  O3' ADE A   7       4.590   7.478 197.511  1.00  0.00      ADNA O
+END

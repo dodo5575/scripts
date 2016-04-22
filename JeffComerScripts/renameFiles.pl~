@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+die "Usage: $0 sourcePattern destPattern inputFileName\n" unless @ARGV >= 3;
+
+my $srcPat = @ARGV[0];
+my $destPat = @ARGV[1];
+
+for ($i = 2; $i < @ARGV; $i++) {
+  my $source = @ARGV[$i];
+  my $dest = @ARGV[$i];
+  $dest =~ s/$srcPat/$destPat/;
+
+  print "Moving $source to $dest.\n";
+
+  die "$source does not exist!\n" unless -e $source;
+  die "$dest exists!\n" if -e $dest;
+
+  system "mv $source $dest";
+}

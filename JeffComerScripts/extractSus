@@ -1,0 +1,34 @@
+#!/usr/bin/env perl
+die "Usage: $0 inputFileName\n" unless @ARGV >= 1;
+
+print "Extracting SUs...\n";
+my $account = "jai";
+my $sus = 0.0;
+my $procs = 8;
+
+foreach $item (@ARGV) {
+    #print "Processing `$item'.\n";
+    open(DAT, $item) || die("Could not open file!");
+    @raw=<DAT>;
+    close(DAT);
+
+    @acct = grep(/$account/, @raw); 
+    
+    if (@acct != 0) {
+	print "=== $item ===\n";
+	print "Account: $account\n";
+	(grep(/nodes=/, @raw))[0] =~ /nodes=(\d*)/;
+	my $nodes = $1;
+	(grep(/walltime=/, @raw))[-1] =~ /walltime=(\d\d):(\d\d):(\d\d)/;
+	my $walltime = $1 + $2/60.0 + $3/3600.0;
+	my $charge = $procs*$nodes*$walltime;
+	print "Nodes: $nodes\n";
+	print "Walltime: $1:$2:$3 = $walltime h\n";
+	print "Charge: $charge SUs\n\n";
+
+	$sus += $charge;
+    }
+}
+
+print "Total charge: $sus SUs\n";
+

@@ -1,0 +1,25 @@
+proc enabletrace {} {
+    global vmd_frame
+    trace variable vmd_frame([molinfo top]) w drawcounter
+}
+
+proc disabletrace {} {
+    global vmd_frame
+    trace vdelete vmd_frame([molinfo top]) w drawcounter
+}
+
+set sel_dna [atomselect top "DNA"]
+set resids [lsort -integer -unique [$sel_dna get resid]]
+$sel_dna delete
+set sels {}
+foreach resid $resids {
+    set sel [atomselect top "DNA and resid $resid"]
+    lappend sels $sel
+}
+
+proc drawcounter { name element op } {
+    global vmd_frame
+    global sels
+    
+    
+}

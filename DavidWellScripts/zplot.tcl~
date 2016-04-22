@@ -1,0 +1,76 @@
+# zplot - Plots the z-coordinate of the center of mass of the provided
+# selection using the multiplot plugin.
+#
+# Written by dbwells2@uiuc.edu
+
+source $env(SCRIPTS)/Procs.tcl
+
+package require multiplot
+
+proc zplot { dir sel } {
+    set radial 0
+    set num 0
+    set user 0
+    
+    if { $dir == "x" } { set dir 0 }
+    if { $dir == "y" } { set dir 1 }
+    if { $dir == "z" } { set dir 2 }
+    if { $dir == "r" } { set radial 1 }
+    if { $dir == "n" } { set num 1 }
+    if { $dir == "u" } { set user 1 }
+    
+    set nframes [molinfo [$sel molid] get numframes]
+    
+    # Set up x and y data lists
+    set xdata {}
+    set ydata {}
+    for { set i 0 } { $i < $nframes } { incr i } {
+	$sel frame $i
+	$sel update
+	set pos [measure center $sel weight mass]
+	if { $radial } {
+	    set x [lindex $pos 0]
+	    set y [lindex $pos 1]
+	    set z [expr {sqrt($x*$x+$y*$y)}]
+	} elseif { $num } {
+	    set z [$sel num]
+	} elseif { $user } {
+	    set z [lmean [$sel get user]]
+	} else {
+	    set z [lindex $pos $dir]
+	}
+	
+	lappend xdata $i
+	lappend ydata $z
+    }
+    
+    # Plot it
+    set title "zplot - molid [$sel molid] - [$sel text]"
+    set plot [multiplot -x $xdata -y $ydata -plot -title $title -xlabel "frame" -ylabel "z"]
+}
+
+proc zplotdiff { sel1 sel2 } {
+    set nframes1 [molinfo [$sel1 molid] get numframes]
+    set nframes2 [molinfo [$sel2 molid] get numframes]
+    
+    set nframes [lindex [lsort -integer "$nframes1 $nframes2"] 0]
+    
+    # Set up x and y data lists
+    set xdata {}
+    set ydata {}
+    for { set i 0 } { $i < $nframes } { incr i } {
+	$sel1 frame $i; $sel1 update
+	$sel2 frame $i; $sel2 update
+	set pos1 [measure center $sel1 weight mass]
+	set pos2 [measure center $sel2 weight mass]
+	set z [veclength [vecsub $pos1 $pos2]]
+	
+	lappend xdata $i
+	lappend ydata $z
+    }
+    
+    # Plot it
+    set title "zplot"
+    set plot [multiplot -x $xdata -y $ydata -plot -title $title -xlabel "frame" -ylabel "z"]
+}
+

@@ -1,0 +1,243 @@
+# Use with: vmd -dispdev text -e generateHairpin.tcl
+# Author: Jeff Comer <jcomer2@uiuc.edu>
+
+set range 4
+set prob0 0.0
+set prob1 0.7
+set poreLength 100
+set substrateText "resname SIO2"
+set selText "type SI and (within $range of name OH2) and abs(z)>30"
+set outSeg AMI
+# Input:
+set topFile top_amine_silicon_charge.inp
+set topFile1 top_all27_prot_lipid_pot.inp
+set psf trap2.2_KCl.psf
+set pdb trap2.2_KCl.pdb
+set templateStruct one_amine
+# Output:
+set outName amine_coating
+set substrateName substrate
+
+source vector.tcl
+set templatePsf $templateStruct.psf
+set templatePdb $templateStruct.pdb
+
+# Get the probability of the modification.
+proc modificationProb {r} {
+    global prob0 prob1 poreLength
+    return [expr $prob0 + 2.0/$poreLength*($prob1-$prob0)*abs([lindex $r 2])]
+}
+
+# Construct a pdb line from a template line, index, resId, and coordinates.
+proc makePdbLine {template index segName resId r} {
+    foreach {x y z} $r {break}
+    set record "ATOM  "
+    set si [string range [format "     %5i " $index] end-5 end]
+    set temp0 [string range $template 12 21]
+    set resId [string range "    $resId"  end-3 end]
+    set temp1 [string range $template  26 29]
+    set sx [string range [format "       %8.3f" $x] end-7 end]
+    set sy [string range [format "       %8.3f" $y] end-7 end]
+    set sz [string range [format "       %8.3f" $z] end-7 end]
+    set temp2 [string range $template 54 71]
+    set segName [string range "$segName    "  0 3]
+    set tempEnd [string range $template 76 end]
+
+    # Construct the pdb line.
+    return "${record}${si}${temp0}${resId}${temp1}${sx}${sy}${sz}${temp2}${segName}${tempEnd}"
+}
+
+
+# Return a list with atom positions.
+proc extractPdbCoords {pdbFile} {
+    set r {}
+    
+    # Get the coordinates from the pdb file.
+    set in [open $pdbFile r]
+    foreach line [split [read $in] \n] {
+	if {[string equal [string range $line 0 3] "ATOM"]} {
+	    set x [string trim [string range $line 30 37]]
+	    set y [string trim [string range $line 38 45]]
+	    set z [string trim [string range $line 46 53]]
+	    
+	    lappend r [list $x $y $z]
+	}
+    }
+    close $in
+    return $r
+}
+
+# Extract all atom records from a pdb file.
+proc extractPdbRecords {pdbFile} {
+    set in [open $pdbFile r]
+    
+    set pdbLine {}
+    foreach line [split [read $in] \n] {
+	if {[string equal [string range $line 0 3] "ATOM"]} {
+	    lappend pdbLine $line
+	}
+    }
+    close $in	
+    
+    return $pdbLine
+}
+
+# Define a basis for the nucleotide.
+proc getAmineBasis {segName resId {mole top}} {
+    set selText "segname $segName and resid $resId"
+    
+    # Get the amine basis.
+    set selX0 [atomselect $mole "($selText) and name SI1"]
+    set selX1 [atomselect $mole "($selText) and name N1"]
+    set selY0 [atomselect $mole "($selText) and name SI1"]
+    set selY1 [atomselect $mole "($selText) and name C4"]
+
+    set rX0 [lindex [$selX0 get {x y z}] 0]
+    set rX1 [lindex [$selX1 get {x y z}] 0]
+    set rY0 [lindex [$selY0 get {x y z}] 0]
+    set rY1 [lindex [$selY1 get {x y z}] 0]
+
+    $selX0 delete
+    $selX1 delete
+    $selY0 delete
+    $selY1 delete
+
+    set ex [vecsub $rX1 $rX0]
+    set ex [vecscale [expr 1.0/[veclength $ex]] $ex]
+    set ey [vecsub $rY1 $rY0]
+    set ey [vecsub $ey [vecscale [vecdot $ey $ex] $ex]]
+    set ey [vecscale [expr 1.0/[veclength $ey]] $ey]
+    set ez [veccross $ex $ey]
+
+    return [matTranspose [list $ex $ey $ez]]
+}
+
+# Define a basis for the nucleotide.
+proc getAminePos {segName resId {mole top}} {
+    set selText "segname $segName and resid $resId"
+    
+    # Get the amine basis.
+    set sel [atomselect $mole "($selText) and name SI1"]
+    return [lindex [$sel get {x y z}] 0]
+}
+
+proc deleteAtoms {atomList inPsf inPdb outName} {
+    resetpsf
+    readpsf $inPsf
+    coordpdb $inPdb
+
+    # Delete the selection.
+    foreach atom $atomList {
+	delatom [lindex $atom 0] [lindex $atom 1] [lindex $atom 2]
+    }
+
+    writepsf $outName.psf
+    writepdb $outName.pdb
+    puts "[llength $atomList] atoms were deleted."
+    return
+}
+
+proc combine {inName0 inName1 outName} {
+    resetpsf
+    
+    readpsf $inName0.psf
+    coordpdb $inName0.pdb
+    readpsf $inName1.psf
+    coordpdb $inName1.pdb
+
+    writepsf $outName.psf
+    writepdb $outName.pdb
+
+    return
+}
+
+###################################################################3
+foreach zero {0} {
+    set templateRec [extractPdbRecords $templatePdb]
+    set templateCoord [extractPdbCoords $templatePdb]
+}
+
+# Load the template and get its info.
+mol load psf $templatePsf pdb $templatePdb
+set all [atomselect top all]
+set addSeg [lindex [$all get segname] 0]
+set addRes [lindex [$all get resid] 0]
+set tempBasis [getAmineBasis $addSeg $addRes]
+set tempPos [getAminePos $addSeg $addRes]
+$all delete
+mol delete top
+
+# Find the possible substrate atoms.
+mol load psf $psf pdb $pdb
+set sel [atomselect top $selText]
+foreach zero {0} {
+    set selPos [$sel get {x y z}]
+    set selIndex [$sel get index]
+}
+$sel delete
+
+# Make list of substrate atoms, using the probability to modify an atom.
+set subIndex {}
+foreach p $selPos i $selIndex {
+    set prob [modificationProb $p]
+    if {rand() < $prob} {
+	lappend subIndex $i
+    }
+}
+
+# Select the substrate atoms.
+set subSel [atomselect top "index $subIndex"]
+set subNum [$subSel num]
+foreach zero {0} {set subPos [$subSel get {x y z}]}
+$subSel delete
+set other [atomselect top "(not $substrateText) or (index $subIndex)"]
+foreach zero {0} {set otherAtoms [$other get {segname resid name}]}
+$other delete
+
+puts "Building the PDB."
+puts "Chemically modifying $subNum sites."
+set out [open $outSeg.pdb w]
+set index 1
+set res 1
+foreach p $subPos {
+    # Modify this atom!
+    foreach pos $templateCoord rec $templateRec {
+	set r [vecadd $p [vecsub $pos $tempPos]]
+	set line [makePdbLine $rec $index $outSeg $res $r]
+	puts $out $line
+
+	incr index
+    }
+    incr res
+}
+close $out
+
+# Have psfgen build the structure.
+puts "Building the PSF with psfgen."
+package require psfgen
+topology $topFile 
+topology $topFile1
+resetpsf
+#psfalias
+
+segment $outSeg {
+    first NONE
+    last NONE
+    pdb $outSeg.pdb
+}
+
+coordpdb $outSeg.pdb
+guesscoord
+
+writepsf ${outName}0.psf
+writepdb ${outName}0.pdb
+
+# Delete the coated atoms.
+puts "Deleting the coated atoms from the original system."
+deleteAtoms $otherAtoms $psf $pdb $substrateName
+
+# Combine the resultant systems.
+puts "Combining the systems."
+combine $substrateName ${outName}0 ${outName}
+
+exit

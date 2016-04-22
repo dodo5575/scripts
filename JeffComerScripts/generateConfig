@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+die "Usage: $0 templateFile varName value0 [value1]...\n" unless @ARGV >= 3;
+
+my $templateFile = @ARGV[0];
+my $varName = @ARGV[1];
+my $n = @ARGV;
+
+# Read the template.
+open(DAT, $templateFile) || die("Could not open file $index!\n");
+@data=<DAT>;
+#my @indexList = split(' ', $data[0]);
+close(DAT);
+
+# Write the config files.
+for ($i = 2; $i < $n; $i++) {
+    my $val = @ARGV[$i];
+    my $outFile = $templateFile . "$val.namd";
+    open(OUT, ">" . "$outFile") || die("Could not open file $outFile!\n");
+
+    my $defLine = "set $varName $val\n";
+    print OUT $defLine;
+    foreach (@data) {
+	print OUT $_;
+    }
+}

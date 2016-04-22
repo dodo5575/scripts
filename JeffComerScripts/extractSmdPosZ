@@ -1,0 +1,15 @@
+#!/usr/bin/env perl
+die "Usage: $0 inputFileName timestep\n" unless @ARGV == 2;
+
+my ($source) = @ARGV[0];
+my ($timestep) = @ARGV[1];
+my $dest = $source . ".z";
+
+print "Extracting forces from file `$source'...\n";
+
+die "$source does not exist!\n" unless -e $source;
+die "$dest exists!\n" if -e $dest;
+
+my $awkCmd = "'{print \$2*$timestep,\$5}'";
+system "grep \"SMD  \" $source | awk $awkCmd > $dest";
+print "Results written to $dest\n"

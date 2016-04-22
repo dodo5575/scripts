@@ -1,0 +1,59 @@
+PSF
+
+       4 !NTITLE
+ REMARKS original generated structure x-plor psf file
+ REMARKS topology /home/cli56/TopPar/top_all36_na.rtf 
+ REMARKS topology /home/cli56/TopPar/toppar_water_ions_jejoong.str 
+ REMARKS segment MGHH { first NONE; last NONE; auto angles dihedrals }
+
+      19 !NATOM
+       1 MGHH 1    MGH  MG   MG     2.000000       24.3050           0
+       2 MGHH 1    MGH  OHA  OTMG  -1.190000       15.9994           0
+       3 MGHH 1    MGH  H1A  HT     0.595000        1.0080           0
+       4 MGHH 1    MGH  H2A  HT     0.595000        1.0080           0
+       5 MGHH 1    MGH  OHB  OTMG  -1.190000       15.9994           0
+       6 MGHH 1    MGH  H1B  HT     0.595000        1.0080           0
+       7 MGHH 1    MGH  H2B  HT     0.595000        1.0080           0
+       8 MGHH 1    MGH  OHC  OTMG  -1.190000       15.9994           0
+       9 MGHH 1    MGH  H1C  HT     0.595000        1.0080           0
+      10 MGHH 1    MGH  H2C  HT     0.595000        1.0080           0
+      11 MGHH 1    MGH  OHD  OTMG  -1.190000       15.9994           0
+      12 MGHH 1    MGH  H1D  HT     0.595000        1.0080           0
+      13 MGHH 1    MGH  H2D  HT     0.595000        1.0080           0
+      14 MGHH 1    MGH  OHE  OTMG  -1.190000       15.9994           0
+      15 MGHH 1    MGH  H1E  HT     0.595000        1.0080           0
+      16 MGHH 1    MGH  H2E  HT     0.595000        1.0080           0
+      17 MGHH 1    MGH  OHF  OTMG  -1.190000       15.9994           0
+      18 MGHH 1    MGH  H1F  HT     0.595000        1.0080           0
+      19 MGHH 1    MGH  H2F  HT     0.595000        1.0080           0
+
+      12 !NBOND: bonds
+       2       3       2       4       5       6       5       7
+       8       9       8      10      11      12      11      13
+      14      15      14      16      17      18      17      19
+
+       6 !NTHETA: angles
+       3       2       4       6       5       7       9       8      10
+      12      11      13      15      14      16      18      17      19
+
+       0 !NPHI: dihedrals
+
+
+       0 !NIMPHI: impropers
+
+
+       0 !NDON: donors
+
+
+       0 !NACC: acceptors
+
+
+       0 !NNB
+
+       0       0       0       0       0       0       0       0
+       0       0       0       0       0       0       0       0
+       0       0       0
+
+       1       0 !NGRP
+       0       0       0
+

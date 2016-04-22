@@ -1,0 +1,26 @@
+use strict;
+use warnings;
+use Getopt::Long;
+
+use POSIX 'floor';
+
+use lib ("$ENV{HOME}/perl");
+use Stats;
+
+my %opts;
+GetOptions(\%opts, "output=s", "sel=s@");
+
+my @data;
+while (<>) {
+    push(@data, $_);
+}
+
+my $mean = mean @data;
+my $var = var @data;
+my $n = @data;
+
+
+
+print "mean = $mean\n";
+print "var = $var\n";
+print "stddev = " . sqrt($var) . "\n";

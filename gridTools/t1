@@ -1,0 +1,26 @@
+    //Exactly profileZ but except gets profile along x
+    //only used in gridExternalField_X.C -Manish 
+    void profileX(double factorY, double factorZ, const char* fileName) { 
+      int iz = int(floor((factorZ*nz + 0.5)));                            
+      int iy = int(floor((factorY*ny + 0.5)));                            
+      const int nynx = ny*nx;                                             
+                                                                          
+      if (iz < 0) iz = 0;                                                 
+      if (iz >= nz) iz = nz-1;                                            
+      if (iy < 0) iy = 0;                                                 
+      if (iy >= ny) iy = ny-1;                                            
+                                                                          
+      FILE* out = fopen(fileName,"w");                                    
+      if (out == NULL) {                                                  
+        printf("Couldn't open file %s.\n",fileName);                      
+        return;                                                           
+      }                                                                   
+                                                                          
+      for (int ix = 0; ix < nx; ix++) {                                   
+        int j = ix + iy*nx + iz*nynx;                                     
+        double v = val[j];                                                
+        double x = origin.x + ix*basis.exx;                               
+        fprintf(out, "%0.10g %0.10g\n", x, v);                            
+      }                                                                   
+      fclose(out);                                                        
+    }                                                                     

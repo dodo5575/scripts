@@ -1,0 +1,3 @@
+#!/usr/local/bin/tcsh
+cvs -d /home/cvs/namd/cvsroot get namd
+

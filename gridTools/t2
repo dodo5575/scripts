@@ -1,0 +1,24 @@
+    void profileZ(double factorX, double factorY, const char* fileName) {
+      int ix = int(floor((factorX*nx + 0.5)));
+      int iy = int(floor((factorY*ny + 0.5)));
+      const int nynz = ny*nz;
+
+      if (ix < 0) ix = 0;
+      if (ix >= nx) ix = nx-1;
+      if (iy < 0) iy = 0;
+      if (iy >= ny) iy = ny-1;
+
+      FILE* out = fopen(fileName,"w");
+      if (out == NULL) {
+        printf("Couldn't open file %s.\n",fileName);
+        return;
+      }
+
+      for (int iz = 0; iz < nz; iz++) {
+        int j = iz + iy*nz + ix*nynz;
+        double v = val[j];
+        double z = origin.z + iz*basis.ezz;
+        fprintf(out, "%0.10g %0.10g\n", z, v);
+      }
+      fclose(out);
+    }

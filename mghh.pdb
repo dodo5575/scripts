@@ -1,0 +1,21 @@
+REMARK original generated coordinate pdb file
+ATOM      1  MG  MGH X   1       0.000   0.000   0.000  1.00  0.00      MGHHMG
+ATOM      2  OHA MGH X   1      -1.794   0.738  -0.161  1.00  0.00      MGHH O
+ATOM      3  H1A MGH X   1      -2.558   0.352   0.267  1.00  0.00      MGHH H
+ATOM      4  H2A MGH X   1      -2.158   1.379  -0.771  1.00  0.00      MGHH H
+ATOM      5  OHB MGH X   1       0.064  -0.688  -1.861  1.00  0.00      MGHH O
+ATOM      6  H1B MGH X   1       0.544  -1.476  -2.115  1.00  0.00      MGHH H
+ATOM      7  H2B MGH X   1      -0.442  -0.453  -2.639  1.00  0.00      MGHH H
+ATOM      8  OHC MGH X   1      -0.773  -1.634   0.695  1.00  0.00      MGHH O
+ATOM      9  H1C MGH X   1      -0.788  -1.968   1.592  1.00  0.00      MGHH H
+ATOM     10  H2C MGH X   1      -1.187  -2.323   0.176  1.00  0.00      MGHH H
+ATOM     11  OHD MGH X   1       0.648   1.657  -0.733  1.00  0.00      MGHH O
+ATOM     12  H1D MGH X   1       0.220   2.495  -0.911  1.00  0.00      MGHH H
+ATOM     13  H2D MGH X   1       1.582   1.839  -0.830  1.00  0.00      MGHH H
+ATOM     14  OHE MGH X   1       0.102   0.755   1.712  1.00  0.00      MGHH O
+ATOM     15  H1E MGH X   1       0.625   1.493   2.025  1.00  0.00      MGHH H
+ATOM     16  H2E MGH X   1      -0.607   0.677   2.350  1.00  0.00      MGHH H
+ATOM     17  OHF MGH X   1       1.826  -0.672   0.183  1.00  0.00      MGHH O
+ATOM     18  H1F MGH X   1       2.541  -0.208   0.618  1.00  0.00      MGHH H
+ATOM     19  H2F MGH X   1       1.985  -1.596   0.379  1.00  0.00      MGHH H
+END

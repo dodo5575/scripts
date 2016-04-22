@@ -1,0 +1,16 @@
+set pot [atomselect top "name POT"]
+$pot set radius 1.76375
+$pot delete
+
+set cla [atomselect top "name CLA"]
+$cla set radius 2.27
+$cla delete
+
+set si [atomselect top "resname SIO2 and name \"SI.*\""]
+$si set radius 1.75
+$si delete
+
+set osi [atomselect top "resname SIO2 and name \"O.*\""]
+$osi set radius 1.75
+$osi delete
+

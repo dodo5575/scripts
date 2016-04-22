@@ -1,0 +1,177 @@
+# define trajectory and structure files
+
+if {$argc != 4} {
+    puts "Usage: vmd -dispdev text -e channelShape.tcl -args <psf> <dcd> <timestep>"
+    exit -1
+}
+
+set psffile		[lindex $argv 0]
+
+set dcdfile		[lindex $argv 1]
+set firstOutputFrame	0
+
+set frameRate		[lindex $argv 2]
+set skipframes		1
+
+set langevinDamping	1.0
+set langevinHydrogen	0
+
+
+# load trajectory and wait until loading completes 
+set molTRJ [mol load psf $psffile dcd $dcdfile]
+set n [ molinfo top get numframes ]
+puts "  Loaded $n frames."
+
+set dcdfile ${dcdfile}.CHANNEL.LangevinDNAForce
+set geometryFile /home/david/Work/Scripts/GRIDFORCE/channelFluctuations.dat
+
+
+
+#set name DNA
+set name all
+set outfile ${dcdfile}.${name}
+set outCh [open ${outfile} w]
+
+
+
+set inCh1 [open $geometryFile r]
+
+set i 0
+set halfSpacing 1.5
+set selection ""
+foreach line [split [read $inCh1] \n] {
+    if {[llength $line] == 3} {
+	foreach {z R var} $line { break }
+
+	if {$i == 0} {
+	    set zDown [expr $z - $halfSpacing]
+	    set selection "$name and ((z > [expr $z -$halfSpacing] and z < [expr $z + $halfSpacing] and x*x +y*y < $R*$R)"
+	} else {
+
+	    set selection "$selection or (z > [expr $z -$halfSpacing] and z < [expr $z + $halfSpacing] and x*x +y*y < $R*$R)"
+	}
+	incr i	
+    }
+}
+set selection "$selection )"
+if { ! $langevinHydrogen } {
+    set selection "$selection and noh"
+}
+set zUp [expr $z + $halfSpacing]
+puts "zUp: $zUp; zDown: $zDown"
+close $inCh1
+
+puts $selection
+
+set firstframe 0
+set lastFrame $n
+
+######
+
+# Units are pN
+
+set scaleFactor [expr 0.166054 * $langevinDamping * 1000.0/($frameRate*$skipframes)]
+puts "scaleFactor $scaleFactor"
+
+set listDNA ""
+
+for {set frame 0} {$frame < $lastFrame} {incr frame $skipframes} {
+    
+    
+    if {$frame != 0} {
+
+	set currSelection [atomselect top $selection frame $frame]
+
+	set currCoord [$currSelection get {index z mass}]
+	array unset coord
+	set indexCurr {}
+	set indexMass {}
+	foreach line $currCoord {
+	    foreach {index z mass} $line { break }
+	    lappend indexCurr $index
+	    lappend indexMass $mass
+	    array set coord [list $index  $z]
+	}
+
+#	puts "frame = $frame [array size coord]  [array size refCoord]"
+
+	set dn 0.0
+	set nWaters 0
+	puts $outCh "# frame [expr $frame + $firstOutputFrame]"
+	foreach index $indexCurr mass $indexMass {
+
+	    if {[array get refCoord $index] != ""} {
+#		puts "$coord($index) $refCoord($index)"
+		set dn [expr $dn + $mass*($coord($index) - $refCoord($index))]
+		incr nWaters
+	    } else {
+		set tmpZ  $coord($index)
+		set tmpSel [atomselect top "index $index" frame [expr $frame -1] ]
+		set oldZ [$tmpSel get z]
+		if {$oldZ > $zUp} { 
+		    set dn [expr $dn + $mass*($tmpZ -$zUp)]
+		} elseif {$oldZ < $zDown} {
+		    set dn [expr $dn + $mass*($tmpZ -$zDown)]
+		} else {
+		    set dn [expr $dn + $mass*($tmpZ -$oldZ)]
+		}
+		incr nWaters
+		$tmpSel delete
+	    }
+	}
+
+#	puts "Only in refCoord"
+	foreach index $indexRef mass $massRef {
+	    if {[array get coord $index] == ""} {
+		set tmpZ $refCoord($index)
+		set tmpSel [atomselect top "index $index" frame $frame]
+		set newZ [$tmpSel get z]
+		if {$newZ > $zUp} { 
+		    set dn [expr $dn + $mass*($zUp-$tmpZ)] 
+		} elseif {$newZ < $zDown} {
+		    set dn [expr $dn + $mass*($zDown-$tmpZ)]
+		} else {
+		    set dn [expr $dn + $mass*($newZ -$tmpZ)]
+		}
+		incr nWaters
+		$tmpSel delete
+	    }
+	}
+
+	set dn [expr $dn*$scaleFactor]
+
+	puts "frame = $frame    dn = $dn  $nWaters"
+	puts $outCh "[expr $frame + $firstOutputFrame] $dn $nWaters"
+	
+	lappend listDNA "$frame $dn $nWaters"
+
+	set indexRef {}
+	set massRef {}
+	array unset refCoord
+	foreach line $currCoord {
+	    foreach {index z mass} $line { break }
+	    lappend indexRef $index
+	    lappend massRef $mass
+	    array set refCoord [list $index  $z]	    
+	}
+
+    } else {
+
+	set currSelection [atomselect top $selection frame $frame]
+
+	set currCoord [$currSelection get {index z mass}]
+	set indexRef {}
+	set massRef {}
+	foreach line $currCoord {
+	    foreach {index z mass} $line { break }
+	    lappend indexRef $index
+	    lappend massRef $mass
+	    array set refCoord [list $index  $z]
+	}
+    }
+    $currSelection delete
+}
+close $outCh
+
+
+quit

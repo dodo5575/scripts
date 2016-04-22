@@ -1,0 +1,20 @@
+#!/usr/bin/env perl
+die "Usage: $0 filePrefix\n" unless @ARGV == 1;
+
+my ($prefix) = @ARGV;
+my $namdFile = $prefix . ".namd";
+my $logFile = $prefix . ".log";
+my $dest = $prefix . ".csh";
+
+use Cwd;
+$currDir = &Cwd::cwd();
+
+die "$dest exists!\n" if -e $dest;
+
+open(SCR,">$dest") || die("Cannot Open File");
+print SCR "#\$ -e log-local-err.log\n"; 
+print SCR "#\$ -o log-local-out.log\n";
+print SCR "#\$ -cwd\n\n";
+print SCR "namd2 $namdFile >! $logFile\n";
+print SCR "exit 0\n";
+close(SCR);

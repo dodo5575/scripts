@@ -1,0 +1,25 @@
+#!/usr/bin/env perl
+my $mss = "mss.ncsa.uiuc.edu";
+
+die "Usage: $0 fileName $1 directory\n" unless @ARGV == 2;
+
+my ($source) = @ARGV[0];
+my ($dir) = @ARGV[1];
+
+die "$source does not exist!\n" unless -e $source;
+
+my $size = (stat $source)[7];	# Get size so we can tell MSS
+
+print "Uploading $source to $dir...\n";
+print "Size: $size\n";
+
+#my $ftpcmds = << "EOFTP;"
+#sunique
+#quote allo $size
+#put $source
+#EOFTP;
+
+my $ftpcmds = "jcomer\ncd $dir\nput $source\nbye\n";
+
+system "echo \"$ftpcmds\" | ftp $mss &";
+

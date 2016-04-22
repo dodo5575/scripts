@@ -1,0 +1,12 @@
+# to use: vmd -dispdev text -e solvate.tcl
+
+package require solvate
+
+solvate pore6_b-dna.psf pore6_b-dna.pdb -minmax {{-90 -90 -131} {90 90 131}} -s WT -spsf water.psf -spdb water.pdb -stop tip3p.top -ks "name OH2" -ws 40 -b 1.7 -o pore6_b-dna_sol
+
+file delete combine.psf combine.pdb
+
+quit
+
+
+

@@ -1,0 +1,35 @@
+CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1
+ATOM      1  C4' GUA A  12       7.707   0.103 226.343  1.00  0.00      ADNA C
+ATOM      2  H4' GUA A  12       8.198   0.778 225.792  1.00  0.00      ADNA H
+ATOM      3  O4' GUA A  12       6.312   0.506 226.453  1.00  0.00      ADNA O
+ATOM      4  C1' GUA A  12       5.877   0.399 227.800  1.00  0.00      ADNA C
+ATOM      5  H1' GUA A  12       5.706   1.332 228.116  1.00  0.00      ADNA H
+ATOM      6  C2' GUA A  12       7.022  -0.198 228.612  1.00  0.00      ADNA C
+ATOM      7  H2' GUA A  12       7.072   0.271 229.494  1.00  0.00      ADNA H
+ATOM      8 H2'' GUA A  12       6.931  -1.194 228.615  1.00  0.00      ADNA H
+ATOM      9  P   GUA A  12       8.322  -3.716 226.453  1.00  0.00      ADNA P
+ATOM     10  O1P GUA A  12       7.608  -4.758 227.225  1.00  0.00      ADNA O
+ATOM     11  O2P GUA A  12       9.779  -3.618 226.700  1.00  0.00      ADNA O
+ATOM     12  O5' GUA A  12       7.634  -2.293 226.699  1.00  0.00      ADNA O
+ATOM     13  C5' GUA A  12       7.773  -1.268 225.697  1.00  0.00      ADNA C
+ATOM     14  H5' GUA A  12       6.987  -1.307 225.080  1.00  0.00      ADNA H
+ATOM     15 H5'' GUA A  12       8.687  -1.327 225.296  1.00  0.00      ADNA H
+ATOM     16  N9  GUA A  12       4.636  -0.423 227.821  1.00  0.00      ADNA N
+ATOM     17  C4  GUA A  12       3.347   0.067 227.814  1.00  0.00      ADNA C
+ATOM     18  N2  GUA A  12       1.184   2.804 227.760  1.00  0.00      ADNA N
+ATOM     19  H21 GUA A  12       0.206   3.054 227.758  1.00  0.00      ADNA H
+ATOM     20  H22 GUA A  12       1.845   3.568 227.741  1.00  0.00      ADNA H
+ATOM     21  N3  GUA A  12       3.015   1.385 227.785  1.00  0.00      ADNA N
+ATOM     22  C2  GUA A  12       1.698   1.572 227.785  1.00  0.00      ADNA C
+ATOM     23  N1  GUA A  12       0.784   0.535 227.810  1.00  0.00      ADNA N
+ATOM     24  H1  GUA A  12      -0.215   0.784 227.808  1.00  0.00      ADNA H
+ATOM     25  C6  GUA A  12       1.109  -0.829 227.838  1.00  0.00      ADNA C
+ATOM     26  O6  GUA A  12       0.213  -1.668 227.860  1.00  0.00      ADNA O
+ATOM     27  C5  GUA A  12       2.513  -1.026 227.839  1.00  0.00      ADNA C
+ATOM     28  N7  GUA A  12       3.255  -2.207 227.862  1.00  0.00      ADNA N
+ATOM     29  C8  GUA A  12       4.499  -1.794 227.851  1.00  0.00      ADNA C
+ATOM     30  H8  GUA A  12       5.106  -2.589 227.867  1.00  0.00      ADNA H
+ATOM     31  C3' GUA A  12       8.240   0.188 227.773  1.00  0.00      ADNA C
+ATOM     32  H3' GUA A  12       8.946  -0.509 227.899  1.00  0.00      ADNA H
+ATOM     33  O3' GUA A  12       8.644   1.509 228.111  1.00  0.00      ADNA O
+END

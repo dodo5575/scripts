@@ -1,0 +1,76 @@
+proc enabletrace {} {
+    global vmd_frame
+    trace variable vmd_frame([molinfo top]) w drawcounter
+}
+
+proc disabletrace {} {
+    global vmd_frame
+    trace vdelete vmd_frame([molinfo top]) w drawcounter
+}
+
+proc read_profile { profile } {
+    set inStream [open $profile r]
+    
+    set profileList {}
+    foreach line [split [read $inStream] \n] {
+	
+	if { [llength $line] > 0 } {
+	    foreach {z R devR} $line { break }
+	    lappend profileList "$z $R"
+	}
+    }
+    
+    return $profileList
+}
+
+set profile nanoporeProfile.dat
+
+proc draw_pore { Rshift theta } {
+    global profile profileList
+    set PI 3.14159265
+    
+    if { ![info exists profileList] } {
+	set profileList [read_profile $profile]
+    }
+    
+    foreach line $profileList {
+	foreach { z R } $line { break }
+	set R [expr {$R + $Rshift}]
+	
+	if { [info exists z_last] && [info exists R_last] } {
+	    set line_start "[expr {$R_last * cos($PI*$theta/180)}] [expr {$R_last * sin($PI*$theta/180)}] $z_last"
+	    set line_end "[expr {$R * cos($PI*$theta/180)}] [expr {$R * sin($PI*$theta/180)}] $z"
+	    
+	    draw line $line_start $line_end
+	}
+	
+	set z_last $z
+	set R_last $R
+    }
+}
+
+set Rstart	0
+set Rtarget	-12
+set Rrate	0.000012
+set frameRate	10000
+set thetaList	[list 0 180]
+
+proc drawcounter { name element op } {
+    global vmd_frame
+    global Rstart Rtarget Rrate
+    global frameRate
+    global thetaList
+    
+    # Calculate the proper radius for this frame
+    set Rshift [expr $Rstart - $Rrate*$frameRate*$vmd_frame([molinfo top])]
+    if {$Rshift < $Rtarget} { 
+	set Rshift $Rtarget
+    } 
+
+    # Draw the pore cylinder
+    draw delete all
+    draw color blue
+    foreach theta $thetaList {
+	draw_pore $Rshift $theta
+    }
+}

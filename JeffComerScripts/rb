@@ -1,0 +1,113 @@
+#!/usr/bin/env perl
+
+use strict;
+use warnings;
+use Getopt::Long;
+use Switch 'Perl6';
+
+
+### Parameters ###
+#my $bindir	= "/u/ac/dbwells2/namd2/cvs/namd2/Linux-amd64-MPI-icc";
+my $bindir	= "/u/ac/jcomer/namd/cvs/Linux-amd64-MPI-icc";
+my $defaultWall	= "24:00";
+my $shortWall	= "00:30";
+my $split	= 2;
+my $cores       = 8;
+
+### Command-line arguments ###
+my %opts;
+my $config;
+my $cpus;
+my $nodes;
+
+GetOptions(\%opts, "log:s", "name:s", "depend:i", "walltime:s", "short");
+
+@ARGV == 2 or usage();
+($config, $cpus) = @ARGV;
+$nodes = $cpus/$cores;
+
+$nodes !~ /\./ or die "Choose a number of cpus divisible by $cores.";
+defined $opts{log} or ($opts{log} = $config) =~ s/namd$/log/;
+defined $opts{name} or $opts{name} = trim_jobname($config, 10, $split);
+defined $opts{walltime} or $opts{walltime} = $defaultWall;
+
+$opts{walltime} = $shortWall if $opts{short};
+
+-f $config or die "$config does not exist!\n";
+if (-f $opts{log}) {
+    print "$opts{log} already exists. Overwrite? ";
+    <STDIN> =~ /^[yY]\n$/ or die "\n";
+}
+-d $bindir or die "Bindir $bindir does not exist!\n";
+
+
+### Main script body ###
+
+chomp(my $rundir = `pwd`);
+
+
+### Build run command (inline script) ###
+my $runcommand = "qsub -q normal -V -j oe -N $opts{name} -l walltime=$opts{walltime}:00,nodes=$nodes:ppn=$cores ";
+
+$runcommand .= "-W depend=afterany:$opts{depend} " if defined $opts{depend};
+
+$runcommand .= << "EOC;";
+<< ENDINPUT
+#!/bin/tcsh
+
+soft add +mpichvmi-intel
+cd $rundir
+#echo \\\$PBS_NODEFILE >>& $opts{log}
+#cat \\\$PBS_NODEFILE >>& $opts{log}
+set NP = \\\`awk 'END {print NR}' \\\$PBS_NODEFILE\\\`
+
+mpirun -disable-profiling -machinefile \\\$PBS_NODEFILE -np \\\$NP $bindir/namd2 $config >& $opts{log}
+
+ENDINPUT
+EOC;
+### End of run command ###
+
+
+system $runcommand;
+
+print <<EOM;
+
+NAMD is submitted to the queue, to check on your job use this command:
+
+    qstat -su $ENV{USER}
+
+Your job is running if there is an R (running) in the S (state) column.
+Once the job has started you may monitor progress with this command:
+
+    tail -f $opts{log}
+
+You will need to press Control-C to exit the tail command.
+
+EOM
+
+
+### Subroutines ###
+
+# usage
+sub usage {
+    print << "EOM;";
+Usage: $0 [-l | --log logfile] [-n | --name jobname] [-w | --walltime HH:MM] [-d | --depend jobid] [-s | --short] config.namd cpus
+EOM;
+    exit;
+}
+
+# trim_jobname - takes a config ('.namd') file and produces an 8-letter job name
+sub trim_jobname {
+    my ($jobname, $length, $split) = @_;
+    
+    foreach ($jobname) {
+	s/\.namd$//;				# Removes trailing '.namd'
+	s/([[:lower:]]+)/substr($&, 0, 1)/eg;	# Replaces strings of lower-case letters by the
+						# first letter of the string
+	if (length > $length) {			# Trims length to $length characters
+	    $_ = substr($_, 0, $split) . substr($_, -$length + $split, $length - $split);
+	}
+    }
+    
+    return $jobname;
+}

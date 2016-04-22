@@ -1,0 +1,23 @@
+PATTERN IBBPBBPBBPBB
+IQSCALE 2
+PQSCALE 5
+BQSCALE 12
+
+GOP_SIZE 12
+SLICES_PER_FRAME 1
+
+OUTPUT transloc_constrict.mpg
+INPUT_DIR ./
+INPUT
+transloc_movie*_light.dat.tga [0-19]
+transloc_movie*_light.dat.tga [20-59+2]
+transloc_movie*_light.dat.tga [60-189]
+END_INPUT
+BASE_FILE_FORMAT PPM
+INPUT_CONVERT tgatoppm *
+
+PIXEL HALF
+RANGE 1
+PSEARCH_ALG LOGARITHMIC
+BSEARCH_ALG CROSS2
+REFERENCE_FRAME DECODED

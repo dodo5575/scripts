@@ -1,0 +1,38 @@
+# Match one selection with another.
+# Use with: vmd -dispdev text -e fit.tcl
+# Author: Jeff Comer <jcomer2@illinois.edu>
+
+set fitTextRef "(segname ADNA and resid 15 to 20) or (segname BDNA and resid 92 to 97)"
+set fitTextFit "(segname ADNA and resid 24 to 29) or (segname BDNA and resid 34 to 39)"
+set transText "all"
+#Input:
+set refPsf bamSpecHex.psf
+set refPdb bamSpecHex.pdb
+set fitPsf dna62eq.psf
+set fitPdb dna62eq.pdb
+#Output:
+set finalPdb dna62eqFit.pdb
+
+set refMol [mol load psf $refPsf pdb $refPdb]
+set fitMol [mol load psf $fitPsf pdb $fitPdb]
+set sel0 [atomselect $refMol $fitTextRef]
+set sel1 [atomselect $fitMol $fitTextFit]
+set trans [atomselect $fitMol $transText]
+set all [atomselect $fitMol all]
+
+puts "Fitting [$sel0 num] atoms to [$sel1 num] atoms."
+set m [measure fit $sel1 $sel0 weight mass]
+puts "Transforming [$trans num] atoms."
+$trans move $m
+
+$all writepdb $finalPdb
+
+$all delete
+$sel0 delete
+$sel1 delete
+$trans delete
+mol delete top
+exit
+
+
+

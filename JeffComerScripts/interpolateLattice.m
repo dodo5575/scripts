@@ -1,0 +1,60 @@
+function val = interpolateLattice(data, grid, delta, origin, r)
+% Linearly interpolate a volumetric data set.
+% VAL = INTERPOLATELATTICE(R, DELTA, ORIGIN, DATA)
+% linearly interpolates the volumetric data in DATA on
+% the lattice given by matrix DELTA and vector ORIGIN
+% for the point R.
+% Author: Jeff Comer <jcomer2@illinois.edu>
+
+% Find our position in the lattice.
+% voxel contains the three indices (0-based) of our home voxel.
+deltaInv = inv(delta);
+vox = floor(deltaInv*(r-origin));
+voxR = delta(:,1)*vox(1) + delta(:,2)*vox(2) + delta(:,3)*vox(3) + origin;
+
+% Compute the position of our point relative to the origin of the home
+% voxel.
+rv = r - voxR;
+lr = deltaInv*rv;
+
+% Get the voxel diagonal to ours.
+vox1 = vox + 1;
+
+% Wrap on periodic boundaries, if necessary.
+for j=1:3
+    if vox(j) < 0 || vox(j) >= grid(j)
+        vox(j) = mod(vox(j), grid(j));
+    end
+    if vox1(j) < 0 || vox1(j) >= grid(j)
+        vox1(j) = mod(vox1(j), grid(j));
+    end
+end
+
+% Compute the mixing coordinates.
+deltaMag = [norm(delta(:,1)) norm(delta(:,2)) norm(delta(:,3))];
+a = lr(1)/deltaMag(1);
+b = lr(2)/deltaMag(2);
+c = lr(3)/deltaMag(3);
+
+% Extract the values of the volumetric data on the voxel vertices.
+f000 = data(1 + vox(3) + grid(3)*vox(2) + grid(2)*grid(3)*vox(1));
+f001 = data(1 + vox1(3) + grid(3)*vox(2) + grid(2)*grid(3)*vox(1));
+f010 = data(1 + vox(3) + grid(3)*vox1(2) + grid(2)*grid(3)*vox(1));
+f011 = data(1 + vox1(3) + grid(3)*vox1(2) + grid(2)*grid(3)*vox(1));
+f100 = data(1 + vox(3) + grid(3)*vox(2) + grid(2)*grid(3)*vox1(1));
+f101 = data(1 + vox1(3) + grid(3)*vox(2) + grid(2)*grid(3)*vox1(1));
+f110 = data(1 + vox(3) + grid(3)*vox1(2) + grid(2)*grid(3)*vox1(1));
+f111 = data(1 + vox1(3) + grid(3)*vox1(2) + grid(2)*grid(3)*vox1(1));
+
+% Mix along lattice vector a.
+g00 = f100*a + (1.0-a)*f000;
+g10 = f110*a + (1.0-a)*f010;
+g01 = f101*a + (1.0-a)*f001;
+g11 = f111*a + (1.0-a)*f011;
+
+% Mix along lattice vector b.
+h0 = g10*b + (1.0-b)*g00;
+h1 = g11*b + (1.0-b)*g01;
+
+% Mix along lattice vector c.
+val = h1*c + (1.0-c)*h0;

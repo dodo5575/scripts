@@ -1,0 +1,27 @@
+#!/usr/bin/env perl
+die "Usage: $0 indexListFile inputFileName\n" unless @ARGV == 2;
+
+my $index = @ARGV[0];
+my $source = @ARGV[1];
+my $dest = $source . ".lines";
+
+print "Extracting lines from file `$source'...\n";
+
+die "$source does not exist!\n" unless -e $source;
+die "$index does not exist!\n" unless -e $index;
+die "$dest exists!\n" if -e $dest;
+
+open(DAT, $index) || die("Could not open file $index!\n");
+@data=<DAT>;
+my @indexList = split(' ', $data[0]);
+close(DAT);
+
+my $grepCommand = "grep \"";
+foreach (@indexList) {
+    $grepCommand .= "^" . $_ . "\\|";
+}
+$grepCommand .= "^magic\"";
+#print($grepCommand);
+
+system $grepCommand . " $source > $dest";
+print "Results written to $dest\n"

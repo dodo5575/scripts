@@ -1,0 +1,27 @@
+# Orient by the largest principal axis of inertia.
+# Author: Jeff Comer <jcomer2@illinois.edu>
+set selText nucleic
+# Input:
+set psf ss_triplet_aaa_pot.psf
+set pdb scaled_ss_triplet_aaa_pot.pdb
+# Output:
+set outName major_ss_aaa_pot
+
+source $env(HOME)/scripts/vector.tcl
+
+mol load psf $psf pdb $pdb
+set sel [atomselect top "nucleic"]
+set all [atomselect top all]
+
+set ret [measure inertia $sel moments]
+set cen [lindex $ret 0]
+set trans [lindex $ret 1]
+$all moveby [vecinvert $cen]
+$all move [matConvert3To4 [matInvert $trans]]
+
+$all writepsf $outName.psf
+$all writepdb $outName.pdb
+
+$all delete
+$sel delete
+exit

@@ -1,0 +1,32 @@
+CRYST1    0.000    0.000    0.000  90.00  90.00  90.00 P 1           1
+ATOM      1  C4' CYT A   9       0.802   7.674 199.151  1.00  0.00      ADNA C
+ATOM      2  H4' CYT A   9       0.182   8.249 198.616  1.00  0.00      ADNA H
+ATOM      3  O4' CYT A   9       0.235   6.337 199.258  1.00  0.00      ADNA O
+ATOM      4  C1' CYT A   9       0.313   5.880 200.600  1.00  0.00      ADNA C
+ATOM      5  H1' CYT A   9      -0.628   5.820 200.932  1.00  0.00      ADNA H
+ATOM      6  C2' CYT A   9       1.057   6.936 201.408  1.00  0.00      ADNA C
+ATOM      7  H2' CYT A   9       0.613   7.034 202.299  1.00  0.00      ADNA H
+ATOM      8 H2'' CYT A   9       2.035   6.726 201.392  1.00  0.00      ADNA H
+ATOM      9  P   CYT A   9       4.665   7.823 199.192  1.00  0.00      ADNA P
+ATOM     10  O1P CYT A   9       5.627   6.981 199.939  1.00  0.00      ADNA O
+ATOM     11  O2P CYT A   9       4.748   9.277 199.452  1.00  0.00      ADNA O
+ATOM     12  O5' CYT A   9       3.175   7.308 199.460  1.00  0.00      ADNA O
+ATOM     13  C5' CYT A   9       2.156   7.579 198.479  1.00  0.00      ADNA C
+ATOM     14  H5' CYT A   9       2.088   6.799 197.857  1.00  0.00      ADNA H
+ATOM     15 H5'' CYT A   9       2.318   8.483 198.082  1.00  0.00      ADNA H
+ATOM     16  N1  CYT A   9       0.979   4.548 200.596  1.00  0.00      ADNA N
+ATOM     17  C6  CYT A   9       2.334   4.443 200.600  1.00  0.00      ADNA C
+ATOM     18  H6  CYT A   9       3.033   5.158 200.606  1.00  0.00      ADNA H
+ATOM     19  C5  CYT A   9       2.943   3.229 200.596  1.00  0.00      ADNA C
+ATOM     20  H5  CYT A   9       3.897   2.928 200.597  1.00  0.00      ADNA H
+ATOM     21  C2  CYT A   9       0.169   3.417 200.589  1.00  0.00      ADNA C
+ATOM     22  O2  CYT A   9      -1.060   3.563 200.585  1.00  0.00      ADNA O
+ATOM     23  N3  CYT A   9       0.757   2.194 200.585  1.00  0.00      ADNA N
+ATOM     24  C4  CYT A   9       2.091   2.078 200.589  1.00  0.00      ADNA C
+ATOM     25  N4  CYT A   9       2.617   0.863 200.585  1.00  0.00      ADNA N
+ATOM     26  H41 CYT A   9       1.999   0.064 200.579  1.00  0.00      ADNA H
+ATOM     27  H42 CYT A   9       3.619   0.735 200.588  1.00  0.00      ADNA H
+ATOM     28  C3' CYT A   9       0.806   8.199 200.586  1.00  0.00      ADNA C
+ATOM     29  H3' CYT A   9       1.585   8.815 200.705  1.00  0.00      ADNA H
+ATOM     30  O3' CYT A   9      -0.449   8.756 200.952  1.00  0.00      ADNA O
+END

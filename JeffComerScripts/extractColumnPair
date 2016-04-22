@@ -1,0 +1,18 @@
+#!/usr/bin/env perl
+die "Usage: $0 column0(zero-based) column1(zero-based) inputFileName\n" unless @ARGV == 3;
+
+my ($col0,$col1,$source) = @ARGV;
+my $dest = $source . ".col";
+
+print "Extracting columns $col0 $col1 from file `$source'...\n";
+
+die "$source does not exist!\n" unless -e $source;
+die "$dest exists!\n" if -e $dest;
+
+$col0++;
+$col1++; 
+my $awkCmd = "'{print \$${col0},\$${col1}}'";
+print "Awking $awkCmd.\n";
+
+system "awk $awkCmd $source > $dest";
+print "Results written to $dest\n"

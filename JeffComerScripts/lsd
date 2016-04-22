@@ -1,0 +1,20 @@
+#!/bin/bash
+
+items=$(for f in *; do [ -d $f ] && echo $f ; done)
+
+ymax=$(tput cols)
+maxLength=$(
+    for item in $items; do
+	echo ${#item}
+    done | sort -nr | awk '{print $0; exit}' )
+maxLength=$(($maxLength+1))
+
+termWidth=$(tput cols)
+prCols=$(echo "$termWidth/$maxLength" | bc)
+
+for item in $items; do                                                                                           
+    echo $item
+done | pr -w$termWidth -t$prCols
+
+
+

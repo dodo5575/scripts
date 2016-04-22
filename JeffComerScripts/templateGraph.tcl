@@ -1,0 +1,80 @@
+#!/usr/bin/tclsh
+# Use with: tclsh templateGraph.tcl templateFile [inputFile0] [inputFile1] ... outputFile
+# Author: Jeff Comer <jcomer2@illinois.edu>
+
+if {$argc < 2} {
+    puts "This script requires at least two arguments: "
+    puts "  templateFile"
+    puts "  outputFile"
+    puts "usage:  tclsh templateGraph.tcl templateFile \[inputFile0\] \[inputFile1\] ... outputFile"
+    
+    exit
+}
+
+set lastArg [expr $argc - 1]
+set lastInp [expr $argc - 2]
+# Input:
+set templateFile [lindex $argv 0]
+set inputFile [lrange $argv 1 $lastInp]
+# Output:
+set outputFile [lindex $argv $lastArg]
+
+puts ""
+puts "templateGraph:"
+puts "Using $templateFile as a template"
+puts "Using $inputFile as input data sets"
+puts "Inserting [llength $inputFile] data sets into $outputFile"
+
+if {[file exists $outputFile]} {
+    puts stderr "Warning: Output file $outputFile exists!"
+}
+
+# Insert a data file into an output stream.
+proc insertData {out file} {
+    set in [open $file r]
+    puts $out [read $in]
+    close $in
+}
+
+set in [open $templateFile r]
+set out [open $outputFile w]
+set count 0
+set readingData 0
+foreach line [split [read $in] \n] {
+    if {$readingData} {
+	# Don't write any thing with we are in a data set.
+	if {[string match "&*" $line]} {
+	    puts $out "&"
+	    set readingData 0
+	}
+    } elseif {[string match "@type xy*" $line]} {
+	puts $out $line
+
+	# Begin reading a data set.
+	set readingData 1
+	# Insert the data file.
+	if {$count >= [llength $inputFile]} {
+	    puts "Warning: No input file to insert. Data set $count will be blank."
+	    incr count
+	} else {
+	    set current [lindex $inputFile $count]
+	    puts "Data set $count: $current"
+	    insertData $out $current
+	    incr count
+	}
+    } else {
+	# Just write the line.
+	puts $out $line
+    }
+
+	  }
+close $out
+close $in
+
+puts ""
+puts "Found $count insertion points."
+puts "Had [llength $inputFile] sets to insert."
+exit
+
+
+

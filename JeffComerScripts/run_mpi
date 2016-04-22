@@ -1,0 +1,73 @@
+#!/bin/tcsh
+
+if ( $# != 4 ) then
+  echo "This script requires four arguments:"
+  echo "  name of the job"
+  echo "  NAMD input file"
+  echo "  NAMD log file"
+  echo "  number of nodes"
+  exit -1
+endif
+
+set RUNNAME = $1
+set CONFFILE = $2
+set LOGFILE = $3
+set NUMNODES = $4
+
+if ( ! -f $CONFFILE) then
+  echo "NAMD input file $CONFFILE does not exist!"
+  exit -1
+endif
+
+if ( -f $LOGFILE) then
+  echo "NAMD input file $LOGFILE already exists!"
+  exit -1
+endif
+
+# set RUNDIR = `pwd`
+
+echo "Submitting NAMD run to batch queue..."
+echo ""
+
+# Run in a batch queue
+#cat << ENDINPUT
+qsub -q batch -V -j oe -N $RUNNAME -l walltime=20:00:00,nodes=${NUMNODES}:ppn=2 << ENDINPUT
+#!/bin/tcsh
+
+cd $cwd
+
+echo \$PBS_NODEFILE
+cat \$PBS_NODEFILE
+
+set NP = \`awk 'END {print NR}' \$PBS_NODEFILE\`
+echo \$NP
+
+# set NODEFILE = \$PBS_JOBID.nodelist
+# echo "group main ++shell ssh ++pathfix /private/automount/ / ++pathfix /private/var/automount/ /" > \$NODEFILE
+# awk '{print "host", \$1}' \$PBS_NODEFILE >> \$NODEFILE
+
+set BINDIR = /turing/home/jcphill/feb2006/namd2/MacOSX-PPC-MPI-GM-xlC
+set MPIRUN = /turing/software/mpichgm-1.2.6..14a-ibm/bin/mpirun
+
+limit
+unlimit maxproc
+limit
+
+/turing/software/bin/rjq \$BINDIR/namd2 $CONFFILE >& $LOGFILE
+# \$BINDIR/charmrun ++verbose +p\$NP ++nodelist \$NODEFILE \$BINDIR/namd2 $CONFFILE >& $LOGFILE
+
+ENDINPUT
+
+echo ""
+echo "NAMD is submitted to the queue, to check on your job use this command:"
+echo ""
+echo "    qstat -su $USER"
+echo ""
+echo "Your job is running if there is an R (running) in the S (state) column."
+echo "Once the job has started you may monitor progress with this command:"
+echo ""
+echo "    tail -f $LOGFILE"
+echo ""
+echo "You will need to press Control-C to exit the tail command."
+echo ""
+

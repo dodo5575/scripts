@@ -1,0 +1,50 @@
+*>>>>>>>>CHARMM22 All-Hydrogen Topology File for Proteins <<<<<<
+*>>>>> Includes phi, psi cross term map (CMAP) correction <<<<<<<
+*>>>>>>>>>>>>>>>>>>>>>> December, 2003 <<<<<<<<<<<<<<<<<<<<<<<<<<
+* All comments to ADM jr. via the CHARMM web site: www.charmm.org
+*               parameter set discussion forum
+*
+31  1
+
+! references
+!
+!PROTEINS
+!
+!MacKerell, A.D., Jr,. Feig, M., Brooks, C.L., III, Extending the
+!treatment of backbone energetics in protein force fields: limitations
+!of gas-phase quantum mechanics in reproducing protein conformational
+!distributions in molecular dynamics simulations, Journal of
+!Computational Chemistry, 25: 1400-1415, 2004.
+!
+!MacKerell, Jr., A. D.; Bashford, D.; Bellott, M.; Dunbrack Jr., R.L.;
+!Evanseck, J.D.; Field, M.J.; Fischer, S.; Gao, J.; Guo, H.; Ha, S.;
+!Joseph-McCarthy, D.; Kuchnir, L.; Kuczera, K.; Lau, F.T.K.; Mattos,
+!C.; Michnick, S.; Ngo, T.; Nguyen, D.T.; Prodhom, B.; Reiher, III,
+!W.E.; Roux, B.; Schlenkrich, M.; Smith, J.C.; Stote, R.; Straub, J.;
+!Watanabe, M.; Wiorkiewicz-Kuczera, J.; Yin, D.; Karplus, M.  All-atom
+!empirical potential for molecular modeling and dynamics Studies of
+!proteins.  Journal of Physical Chemistry B, 1998, 102, 3586-3616.
+!
+!IONS (see lipid and nucleic acid topology and parameter files for
+!additional ions
+!
+!ZINC
+!
+!Roland H. Stote and Martin Karplus, Zinc Binding in Proteins and
+!Solution: A Simple but Accurate Nonbonded Representation, PROTEINS:
+!Structure, Function, and Genetics 23:12-31 (1995)
+!
+
+MASS     4 HT     1.00800 H ! TIPS3P WATER HYDROGEN
+MASS    75 OT    15.99940 O ! TIPS3P WATER OXYGEN
+
+RESI TIP3         0.000 ! tip3p water model, generate using noangle nodihedral
+GROUP   
+ATOM OH2  OT     -0.834
+ATOM H1   HT      0.417
+ATOM H2   HT      0.417
+!BOND OH2 H1 OH2 H2 H1 H2    ! the last bond is needed for shake
+BOND OH2 H1 OH2 H2 	    ! Don't be fake, get rid of shake !
+ANGLE H1 OH2 H2             ! required
+ACCEPTOR OH2   
+PATCHING FIRS NONE LAST NONE 

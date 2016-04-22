@@ -1,0 +1,3 @@
+#!/usr/local/bin/tcsh
+cvs -d /home/cvs/vmd/cvsroot get vmd
+cvs -d /home/cvs/vmd/cvsroot get plugins 

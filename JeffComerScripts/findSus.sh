@@ -1,0 +1,82 @@
+#! /bin/bash
+
+## author: cmaff
+
+## counts SUs by descending into out directories that this script is called from, searching for $outDir.
+## run as an executable
+
+outDir=output
+logDir=. ;# dave uses logDir=.
+
+## define some functions
+llength () {
+    local count item
+    for item; do
+	let "count++"
+    done
+    echo $count
+}
+isNumber () {
+    if (( $# != 1 )); then return 1; fi
+    regExpString='^\.?[0-9]+\.?[0-9]*$'
+    (echo $1 | egrep -q $regExpString)
+    return $?
+} 
+sumSUs.sh () {
+    ## this function looks at all the logFiles passed to it and finds the number of SUs
+    local FILE suSum PROCS ATOMS WALLTIME sus ME
+    echo "$ME: $#" > /dev/stderr
+    ME=sumSUs.sh
+    if (( $# == 0 )); then echo "Usage: $ME filename [filename...]" > /dev/stderr; exit -1; fi
+    for FILE; do 
+	if [[ ! -f $FILE ]]; then echo "Usage: $ME filename [filename...]" > /dev/stderr; exit -1; fi
+    done
+    
+    suSum=0;
+    for FILE; do
+	PROCS=$(awk '/Running on [0-9]* processors/ {print $4; exit}' $FILE)
+	ATOMS=$(awk '/Info: [0-9]* ATOMS/ {print $2; exit}' $FILE)
+	WALLTIME=$( tac $FILE | awk '/^TIMING/ { print $7/3600 ; exit }' )
+	
+	sus=$(echo $PROCS*$WALLTIME | bc 2> /dev/null)
+	if $(isNumber $sus); then
+	    suSum=$(echo $sus+$suSum | bc 2> /dev/null)
+	    echo "$FILE used $sus cpu-hours" > /dev/stderr
+	else
+	    echo -e "\t\tWARNING: $ME did not find sus in $FILE." > /dev/stderr
+	fi
+    done
+    echo -e "\nTotal SUs: $suSum"
+}
+
+## find all dirs and symbolic links of name $outDir
+dirs="$(find -iname $outDir -type d) $(find -iname $outDir -type l)" 
+numDirs=$(llength $dirs)
+
+## loop through directories and look at all log files in $logDir
+workingDir=$(pwd)
+suSum=0
+for dir in $dirs; do 
+    let "count++"
+    echo "Working on files in directory $dir ($count/$numDirs)"
+
+    ## grab sus from all the log files
+    cd ${dir%/$outDir*}
+    #echo "I'm in $(pwd)"
+    
+     sus=$( sumSUs.sh $logDir/*log 2> /dev/null )
+    # sus=$( sumSUs.sh $logDir/*log )
+    sus=$( echo $sus | tail -n 1 | awk '{print $3}' )
+    cd $workingDir
+    #echo "I'm in $(pwd)"
+    
+    ## did we actually get SUses?
+    if $(isNumber $sus); then
+	suSum=$(echo $sus+$suSum | bc 2> /dev/null)
+	echo -e "\t$sus SUs"
+    else
+	echo -e "\tWARNING: no SUs found in $dir." > /dev/stderr
+    fi
+done
+
+echo -e "\nTotal SUs: $suSum"

@@ -1,0 +1,3 @@
+cp Methods.tex Methods.tex.new
+svn log Methods.tex
+svn update -r4315 Methods.tex

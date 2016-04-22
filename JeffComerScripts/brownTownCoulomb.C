@@ -1,0 +1,321 @@
+///////////////////////////////////////////////////////////////////////  
+// Author: Jeff Comer <jcomer2@illinois.edu>    
+#include <stdlib.h>
+#include <time.h>
+
+#include "useful.H"
+#include "Grid.H"
+#include "Reader.H"
+#include "BrownTown.H"
+#include "Random.H"
+#include "ComputeForce.H"
+#include "BrownianParticle.H"
+
+String makePdbLine(const String& tempLine, int index, const String& segName, int resId, const String& name, Vector3 r, double beta) {
+  char s[128];
+
+  String record("ATOM  ");
+  sprintf(s, "     %5i ", index);
+  String si = String(s).range(-6,-1);
+  if (name.length() == 4) sprintf(s, "%s   ", name.val());
+  else sprintf(s, " %s   ", name.val());
+  String nam = String(s).range(0,3);
+  String temp0 = tempLine.range(16,21);
+  
+  sprintf(s, "    %d", resId);
+  String res = String(s).range(-4,-1);
+  String temp1 = tempLine.range(26,29);
+  
+  sprintf(s,"       %.3f", r.x);
+  String sx = String(s).range(-8,-1);
+  sprintf(s,"       %.3f", r.y);
+  String sy = String(s).range(-8,-1);
+  sprintf(s,"       %.3f", r.z);
+  String sz = String(s).range(-8,-1);
+
+  String temp2 = tempLine.range(54,59);
+  sprintf(s,"    %.2f", beta);
+  String bet = String(s).range(-6,-1);
+  String temp3 = tempLine.range(66,71);
+
+  sprintf(s, "%s    ", segName.val());
+  String seg = String(s).range(0,3);
+
+  String ret(record);
+  ret.add(si);
+  ret.add(nam);
+  ret.add(temp0);
+  ret.add(res);
+  ret.add(temp1);
+  ret.add(sx);
+  ret.add(sy);
+  ret.add(sz);
+  ret.add(temp2);
+  ret.add(bet);
+  ret.add(temp3);
+  ret.add(seg);
+  
+  return ret;
+}
+
+void writePdbTraj(const char* fileName, const Vector3* atomPos, const String* atomName, int atomNum, Vector3 sysDim, double beta) {
+  char s[128];
+  sprintf(s, "CRYST1   %.3f   %.3f   %.3f  90.00  90.00  90.00 P 1           1\n", sysDim.x, sysDim.y, sysDim.z);
+  
+  String sysLine(s);
+  String tempLine("ATOM      1  CA  MOL S   1      -6.210  -9.711   3.288  0.00  0.00      ION");
+  String line;
+
+  FILE* out = fopen(fileName, "w");
+  fprintf(out, sysLine.val());
+
+  for (int i = 0; i < atomNum; i++) {
+    line = makePdbLine(tempLine, i, atomName[i], i, atomName[i], atomPos[i], beta);
+    fprintf(out, line.val());
+    fprintf(out, "\n");
+  }
+  fprintf(out, "END\n");
+  fclose(out);
+}
+
+void appendPdbTraj(const char* fileName, const Vector3* atomPos, const String* atomName, int atomNum, Vector3 sysDim, double beta) {
+  String tempLine("ATOM      1  CA  MOL S   1      -6.210  -9.711   3.288  0.00  0.00      ION");
+  String line;
+
+  FILE* out = fopen(fileName, "a");
+  for (int i = 0; i < atomNum; i++) {
+    line = makePdbLine(tempLine, i, atomName[i], i, atomName[i], atomPos[i], beta);
+    fprintf(out, line.val());
+    fprintf(out, "\n");
+  }
+  fprintf(out, "END\n");
+  fclose(out);
+}
+
+void error(const char* s) {
+  printf("Error: %s", s);
+  exit(0);
+}
+
+double diffclock(clock_t clock1,clock_t clock2)
+{
+	double diffticks=clock2-clock1;
+	double diffms=(diffticks*1000)/CLOCKS_PER_SEC;
+	return diffms;
+} 
+
+
+int main(int argc, char* argv[])
+{
+  if ( argc != 2 ) {
+    printf("Usage: %s configFile\n", argv[0]);
+    printf("You entered %i arguments.\n", argc-1);
+    return 0;
+  }
+  const char* configFile = argv[1];
+
+  printf("Brownian Dynamics initiated with command:\n");
+  for (int i = 0; i < argc; i++) printf("%s ", argv[i]);
+  printf("\n");
+ 
+  // Read the parameter file.
+  Reader config(configFile);
+  printf("Read config file %s.\n", configFile);
+  const int numParams = config.length();
+  const int numParts = config.countParameter("particle");
+  BrownianParticle* part = new BrownianParticle[numParts];
+  String* partGridFile = new String[numParts];
+  
+  // Set the defaults.
+  String outName("out");
+  double timestep = 1e-4;
+  long int steps = 100;
+  int interparticleForce = 1;
+  int fullElect = 1;
+  double kT = 1.0;
+  double coulombConst = 566.440698/82.0;
+  double electricField = 0.0;
+  double cutoff = 10.0;
+  int outPeriod = 200;
+  
+  // Set other parameters.
+  const int decompPeriod = 4;
+  const double switchLen = 2.0;
+  const double switchStart = cutoff-switchLen;
+  const double initialZ = 25;
+
+  int currPart = -1;
+  for (int i = 0; i < numParams; i++) {
+    String param = config.getParameter(i);
+    String value = config.getValue(i);
+
+    if (param == String("outName")) outName = value;
+    else if (param == String("timestep")) timestep = strtod(value.val(), NULL);
+    else if (param == String("steps")) steps = atol(value.val());
+    else if (param == String("interparticleForce")) interparticleForce = atoi(value.val());
+    else if (param == String("fullElect")) fullElect = atoi(value.val());
+    else if (param == String("kT")) kT = strtod(value.val(), NULL);
+    else if (param == String("coulombConst")) coulombConst = strtod(value.val(), NULL);
+    else if (param == String("electricField")) electricField = strtod(value.val(), NULL);
+    else if (param == String("cutoff")) cutoff = strtod(value.val(), NULL);
+    else if (param == String("outPeriod")) outPeriod = atoi(value.val());
+    else if (param == String("particle")) { currPart++; part[currPart] = BrownianParticle(value); }
+    else if (param == String("num")) part[currPart].num = atoi(value.val());
+    else if (param == String("gridFile")) partGridFile[currPart] = value;
+    else if (param == String("diffusion")) part[currPart].diffusion = strtod(value.val(), NULL);
+    else if (param == String("charge")) part[currPart].charge = strtod(value.val(), NULL);
+    else if (param == String("radius")) part[currPart].radius = strtod(value.val(), NULL);
+    else if (param == String("eps")) part[currPart].eps = strtod(value.val(), NULL);
+  }
+   
+  // Write the parameters.
+  printf("\nParameters: \n");
+  printf("outName %s\n", outName.val());
+  printf("timestep %.10g\n", timestep);
+  printf("steps %ld\n", steps);
+  printf("interparticleForce %d\n", interparticleForce);
+  printf("fullElect %d\n", fullElect);
+  printf("kT %.10g\n", kT);
+  printf("coulombConst %.10g\n", coulombConst);
+  printf("electricField %.10g\n", electricField);
+  printf("cutoff %.10g\n", cutoff);
+  printf("outPeriod %d\n", outPeriod);
+  
+  // Write the particles.
+  printf("\nParticles:\n");
+  
+  for (int i = 0; i < numParts; i++) {
+    printf("particle %s\n", part[i].name.val());
+    printf("num %d\n", part[i].num);
+    printf("gridFile %s\n", partGridFile[i].val());
+    printf("diffusion %.10g\n", part[i].diffusion);
+    printf("charge %.10g\n", part[i].charge);
+    printf("radius %.10g\n", part[i].radius);
+    printf("eps %.10g\n\n", part[i].eps);
+  }
+
+  // Load the potential grids.
+  printf("Loading the potential grids...\n");
+  for (int i = 0; i < numParts; i++) {
+    part[i].grid = new Grid(partGridFile[i].val());
+    printf("Loaded %s.\n", partGridFile[i].val());
+  }
+
+  // Instantiate the Brownian Dynamics object.
+  BrownTown brown(kT, timestep, *(part[0].grid));
+  brown.setPeriodic(1,1,1);
+  
+  // Seed the random number generator.
+  int seed = (unsigned int)time((time_t *)NULL);
+  printf("\nRandom number generator seed: %i\n", seed);
+  Random randoGen(seed);
+
+  // Get the total number of particles.
+  int num = 0;
+  for (int i = 0; i < numParts; i++) num += part[i].num;
+
+  // Get the system dimensions.
+  Vector3 sysDim = part[0].grid->getExtent();
+  Vector3 origin = part[0].grid->getOrigin();
+  Vector3 destin = part[0].grid->getDestination();
+  
+  // Set initial conditions.
+  Vector3* pos = new Vector3[num];
+  Vector3* pos1 = new Vector3[num];
+  int* type = new int[num];
+  String* name = new String[num];
+  int pn = 0;
+  int p = 0;
+  for (int i = 0; i < num; i++) {
+
+    do {
+      pos[i] = brown.wrap(Vector3(sysDim.x*randoGen.uniform(),
+				  sysDim.y*randoGen.uniform(),
+				  sysDim.z*randoGen.uniform()));
+    } while (fabs(pos[i].z) < initialZ);
+
+    pos1[i] = pos[i];
+    type[i] = p;
+    name[i] = part[p].name;
+    //name[i].upper();
+    pn++;
+    if (pn >= part[p].num) {
+      p++;
+      pn = 0;
+    }
+  }
+
+   // Trajectory PDB
+  char outTrajFile[256];
+  sprintf(outTrajFile, "traj_%s.pdb", outName.val());
+  writePdbTraj(outTrajFile, pos, name, num, sysDim, 0.0); 
+  //FILE* out = fopen("force_coulomb.dat", "w");
+
+  // Prepare the force object.
+  ComputeForce internal(num, part, numParts, *(part[0].grid), switchStart, switchLen, coulombConst);
+  internal.decompose(pos);
+  Vector3* forceInternal = new Vector3[num];
+  for (int i = 0; i < num; i++) forceInternal[i] = Vector3(0.0);
+  Vector3 rando = randoGen.gaussian_vector();
+  ////////////////////////////////////////////////////////////////
+  // Run the Brownian Dynamics steps.
+  clock_t clock0 = clock();
+  for (long int s = 0; s < steps; s++) {
+
+    // Remake the cell decomposition.
+    if (!fullElect && s % decompPeriod == 0) internal.decompose(pos);
+
+    // Compute the internal forces.
+    if (interparticleForce) {
+      if (fullElect) internal.computeFull(forceInternal, pos, type);
+      else internal.compute(forceInternal, pos, type);
+    }
+    
+    // Loop through the particles.
+    for (int i = 0; i < num; i++) {
+
+      // Compute the external forces.
+      Vector3 forceExternal = Vector3(0.0, 0.0, part[type[i]].charge*electricField);
+      Vector3 forceGrid = part[type[i]].grid->interpolateForce(pos[i]);
+      //Vector3 forceGrid = 0.0;
+
+      // Compute the total force.
+      Vector3 force = forceInternal[i] + forceExternal + forceGrid;
+
+      // Get the random kick.
+      Vector3 rando = randoGen.gaussian_vector();
+
+      // Step
+      pos1[i] = brown.stepPeriodic(pos[i], force, rando, part[type[i]].diffusion);
+    }
+
+    if (s % outPeriod == 0) {
+      appendPdbTraj(outTrajFile, pos1, name, num, sysDim, 0.0);    
+
+      if (s % 10*outPeriod == 0) {
+	double percent = (100.0*s)/steps;
+	clock_t clock1 = clock();
+	double stepTime = diffclock(clock0, clock1)/outPeriod;
+	printf("step %ld, time %g, %.2f percent complete, %.1f ms/step\n", s, s*timestep, percent, stepTime);
+	clock0 = clock1;
+      }
+    }
+    
+    // Swap the position pointers.
+    Vector3* temp = pos;
+    pos = pos1;
+    pos1 = temp;
+  }
+  //fclose(out);
+
+
+  delete[] pos;
+  delete[] pos1;
+  delete[] type;
+  delete[] name;
+  delete[] part;
+  delete[] partGridFile;
+  delete[] forceInternal;
+
+  return 0;
+}

@@ -1,0 +1,44 @@
+# computeForceOnProtein
+#
+# author: dbwells2@uiuc.edu
+
+if { $argc != 6 } {
+    puts "Usage: vmd -dispdev text -e computeForceOnDNA.tcl -args <psf> <target-atom-pdb> <dcd> <scale> <CHANNEL | CONSTRICTION+STEM | ALL>"
+    exit
+}
+
+set psf		[lindex $argv 0]
+set pdb		[lindex $argv 1]
+set dcd		[lindex $argv 2]
+set scale	[lindex $argv 3]
+set region	[lindex $argv 4]	;# should be CHANNEL, CONSTRICTION+STEM, or ALL
+
+source $env(HOME)/Work/Scripts/computeForceOnDNA_proc_oneFrameInMem.tcl
+
+if { $scale == 7 } {
+    set gridForceScript	$env(HOME)/Work/polyAnalysis/gridForce_smooth.tcl
+} else {
+    set gridForceScript	$env(HOME)/Work/polyAnalysis/gridForce.tcl
+}
+
+switch $region {
+    CHANNEL {
+	set geometryFile	$env(HOME)/Work/Scripts/GRIDFORCE/channelFluctuations.dat
+	set seltext		[readGeometryFile $geometryFile]
+    }
+    CONSTRICTION+STEM {
+	set geometryFile	$env(HOME)/Work/Scripts/GRIDFORCE/channelFluctuationsCONSTRICTION+STEM.dat
+	set seltext		[readGeometryFile $geometryFile]
+    }
+    ALL {
+	set seltext		"DNA"
+    }
+    default {
+	puts "Invalid region "$REGION", exiting!"
+	return -1
+    }
+}
+
+computeForceOnDNA $pdb $psf $dcd $region $seltext $gridForceScript $scale
+
+exit

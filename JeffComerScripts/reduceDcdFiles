@@ -1,0 +1,16 @@
+#!/usr/bin/env perl
+die "Usage: $0 indexFile outputDirectory stride\n" unless @ARGV == 3;
+
+my $indexFile = @ARGV[0];
+my $outDir = @ARGV[1];
+my $stride = @ARGV[2];
+
+open(IND, $indexFile) || die("Could not open index file $indexFile!");
+@data=<IND>;
+close(IND);
+
+foreach $item (@data) {
+    chomp($item);
+    print "Processing $item.\n";
+    system "catdcd -o $outDir/$item -stride $stride $item"
+}
