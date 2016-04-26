@@ -152,13 +152,13 @@ def trace_seg(array1):
     ## find one of the two ends
     for i in array1:
         bond = 0
-        if data_df.ix[i]['bond1'] != 'NA':
+        if str(data_df.ix[i]['bond1']) != 'NA':
             for j in data_df.ix[i]['bond1']:
                 if j in array1:
                     bond += 1
         
         for j in array1:
-            if i != j and data_df.ix[j]['bond1'] != 'NA' and i in data_df.ix[j]['bond1']:
+            if i != j and str(data_df.ix[j]['bond1']) != 'NA' and i in data_df.ix[j]['bond1']:
                 bond += 1
 
         # if the one of the terminal is found
@@ -174,7 +174,7 @@ def trace_seg(array1):
         record=0
         now = array2[-1]
         # start from 'bond1' of itself
-        if data_df.ix[now]['bond1'] != 'NA':
+        if str(data_df.ix[now]['bond1']) != 'NA':
             for i in data_df.ix[now]['bond1']:
                 if i in array1 and i not in array2:
                     array2 = np.append(array2, i)
@@ -184,7 +184,7 @@ def trace_seg(array1):
         if record != 1:
             for i in array1:
                 if i not in array2:
-                    if data_df.ix[i]['bond1'] != 'NA' and now in data_df.ix[i]['bond1']:
+                    if str(data_df.ix[i]['bond1']) != 'NA' and now in data_df.ix[i]['bond1']:
                         array2 = np.append(array2, i)
 
     return array2
@@ -1331,7 +1331,7 @@ Strand_n  = 0
 data = {}
 current_group = np.array([])
 current_line = ''
-pattern1 = re.compile('^group \((.*)\)')
+pattern1 = re.compile('^group (.*)')
 pattern2 = re.compile('DnaSegment')
 pattern3 = re.compile('DnaStrand')
 pattern4 = re.compile('egroup \((.*)\)')
@@ -1371,8 +1371,8 @@ with open(sys.argv[1], 'r') as inFile:
         # if it reaches 'group'
         if (pattern1.search(line)):
             m1 = pattern1.search(line)
-            #if re.search('Clipboard', m1.group(1)):
-            if m1.group(1) == 'Clipboard':
+            if re.search('(Clipboard)', m1.group(1)):
+            #if m1.group(1) == 'Clipboard':
                 break
 
             current_group = np.append(current_group, m1.group(1))
@@ -1453,14 +1453,14 @@ data_df['n_nt']  = 'NA'
 for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
 
     # if it is not the first nucleotide
-    if data_df.ix[i]['bond_direction'] != 'NA':
+    if str(data_df.ix[i]['bond_direction']) != 'NA':
 
         #print(i, data_df.ix[i]['bond_direction'])
         bond_direction_all = data_df.ix[i]['bond_direction']
 
         # if there are more than one pair, use the continuous pair
         if len(bond_direction_all) > 2:
-            bond_direction_all = np.reshape(bond_direction_all, (len(bond_direction_all) / 2, 2))
+            bond_direction_all = np.reshape(bond_direction_all, (int(len(bond_direction_all) / 2), 2))
             for sub in bond_direction_all:
                 if np.absolute(int(sub[0] - sub[1])) == 1:
                     bond_direction = sub
@@ -1477,7 +1477,7 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
         bond_direction_all = data_df.ix[i + 1]['bond_direction']
 
         if len(bond_direction_all) > 2:
-            bond_direction_all = np.reshape(bond_direction_all, (len(bond_direction_all) / 2, 2))
+            bond_direction_all = np.reshape(bond_direction_all, (int(len(bond_direction_all) / 2), 2))
 
             for sub in bond_direction_all:
                 if np.absolute(sub[0] - sub[1]) == 1:
@@ -1491,7 +1491,7 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
             data_df.ix[i]['direc'] = -1
 
     # get p_nt, n_nt
-    if data_df.ix[i]['bond_direction'] != 'NA':
+    if str(data_df.ix[i]['bond_direction']) != 'NA':
         bond_direction = data_df.ix[i]['bond_direction']
         indices, = np.where(bond_direction == i)
         for k in indices:
@@ -1510,7 +1510,7 @@ data_df['b_nt']  = 'NA'
 data_df['E_seg'] = 'NA'
 # parse 'bond1' of the DNA strands
 for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
-    if data_df.ix[i]['bond1'] != 'NA':
+    if str(data_df.ix[i]['bond1']) != 'NA':
         for j in data_df.ix[i]['bond1']:
             if re.search('E[0-9]*', data_df.ix[j]['segname']):
                 if data_df.ix[j]['ntBond'] == 'NA':
@@ -1523,10 +1523,10 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
 # parse 'bond1' of the DNA segments
 for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
 
-    if data_df.ix[i]['bond1'] != 'NA':
+    if str(data_df.ix[i]['bond1']) != 'NA':
         for j in data_df.ix[i]['bond1']:
             if re.search('T[0-9]*', data_df.ix[j]['segname']):
-                if data_df.ix[i]['ntBond'] == 'NA':
+                if str(data_df.ix[i]['ntBond']) == 'NA':
                     data_df.ix[i]['ntBond'] = np.array([], dtype = np.uint16)
                 data_df.ix[i]['ntBond'] = np.append(data_df.ix[i]['ntBond'], j)
                 data_df.ix[j]['E_seg'] = i
@@ -1544,7 +1544,7 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
 ## get c_seg
 data_df['c_seg'] = 'NA'
 for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
-    if data_df.ix[i]['ntBond'] != 'NA':
+    if str(data_df.ix[i]['ntBond']) != 'NA':
         for j in data_df.ix[i]['ntBond']:
 
 
@@ -1553,7 +1553,7 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
                data_df.ix[ data_df.ix[j]['E_seg'] ]['segname'] != data_df.ix[ data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'] ]['segname']:   
 
                 #print(i,j, data_df.ix[j]['p_nt'], data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'])
-                if data_df.ix[i]['c_seg'] == 'NA':
+                if str(data_df.ix[i]['c_seg']) == 'NA':
                     data_df.ix[i]['c_seg'] = np.array([ data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'] ])
                 else:
                     data_df.ix[i]['c_seg'] = np.append(data_df.ix[i]['c_seg'], data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'])
@@ -1565,7 +1565,7 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
                data_df.ix[ data_df.ix[j]['E_seg'] ]['segname'] != data_df.ix[ data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'] ]['segname']:    
 
                 #print(i,j, data_df.ix[j]['n_nt'], data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'])
-                if data_df.ix[i]['c_seg'] == 'NA':
+                if str(data_df.ix[i]['c_seg']) == 'NA':
                     data_df.ix[i]['c_seg'] = np.array([ data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'] ])
                 else:
                     data_df.ix[i]['c_seg'] = np.append(data_df.ix[i]['c_seg'], data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'])
@@ -1692,7 +1692,7 @@ E_df['nn'] = 'NA'
 for i in E_df.index.values:
     for j in E_df.ix[i]['indice']:
 
-        if data_df.ix[j]['c_seg'] != 'NA':
+        if str(data_df.ix[j]['c_seg']) != 'NA':
             for k in data_df.ix[j]['c_seg']:
 
                 # if they are parallel
@@ -1705,7 +1705,7 @@ for i in E_df.index.values:
 
 for i in E_df.index.values:
     if isinstance(E_df.ix[i]['nn'], np.ndarray):
-        tmp = np.reshape(E_df.ix[i]['nn'], (len(E_df.ix[i]['nn']) / 5, 5))
+        tmp = np.reshape(E_df.ix[i]['nn'], (int(len(E_df.ix[i]['nn']) / 5), 5))
         E_df.ix[i]['nn'] = tmp[ np.argsort(tmp[:,0]) ]
 
 #print(E_df) 
@@ -1911,7 +1911,7 @@ with open('push.helix.for.make_ndx', 'w') as FH:
                     
                         push_array = np.append(push_array, [E_df.ix[seg1]['indice'][a], a, E_df.ix[ seg2 ]['indice'][b], b])
                     
-                    push_array = np.reshape(push_array, (len(push_array)/4, 4))
+                    push_array = np.reshape(push_array, (int(len(push_array)/4), 4))
             
                     #print(push_array)
             
@@ -1973,10 +1973,10 @@ with open('chickenwire.for.make_ndx', 'w') as FH:
                 ri2 = ''
 
             # if the coorsponding CW atom has not been made
-            if data_df.ix[ri1]['CW'] == 'NA':
+            if str(data_df.ix[ri1]['CW']) == 'NA':
 
                 # if it has an associated DNA segment E*
-                if data_df.ix[ri1]['E_seg'] != 'NA':
+                if str(data_df.ix[ri1]['E_seg']) != 'NA':
                     E_seg_index = data_df.ix[ri1]['E_seg']
                     E_seg_name = data_df.ix[E_seg_index]['segname']
                     E_seg_E_ind = data_df.ix[E_seg_index]['E_ind']
