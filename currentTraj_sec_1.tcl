@@ -1,6 +1,6 @@
 # Author: Jeff Comer <jcomer2@illinois.edu>
 # Modified by Chen-Yu Li <cli56@illinois.edu>
-# Usage: vmd -dispdev text -e $argv0 -args psfPrefix pdbPrefix dcdPrefix xstPrefix dcdFreq timestep selText dimension outPrefix
+# Usage: vmd -dispdev text -e $argv0 -args psfPrefix pdbPrefix dcd xstPrefix dcdFreq timestep selText dimension outPrefix
 # Return the current and number of charge carriers in the selection for the frame.
 # 2015/8/18
 
@@ -66,7 +66,7 @@ proc computeCurrent {frameCurr sel charge dt} {
 }
 
 
-proc compute {psfPrefix pdbPrefix dcdPrefix xstPrefix outPrefix} {
+proc compute {psfPrefix pdbPrefix dcd xstPrefix outPrefix} {
 
     variable minl
     variable maxl
@@ -88,7 +88,6 @@ proc compute {psfPrefix pdbPrefix dcdPrefix xstPrefix outPrefix} {
     # Input:
     set psf ${psfPrefix}.psf
     set pdb ${pdbPrefix}.pdb
-    set dcd ${dcdPrefix}.dcd
     set xst ${xstPrefix}.xst
     
     # Get the time change between frames in nanoseconds.
@@ -123,7 +122,7 @@ proc compute {psfPrefix pdbPrefix dcdPrefix xstPrefix outPrefix} {
     # Loop over the dcd files.
     # Load the trajectory.
     animate delete all
-    mol addfile $dcd type dcd step $stride waitfor all
+    mol addfile $dcd first 0 last -1 waitfor all
     set nFrames [molinfo top get numframes]
     puts [format "Reading %i frames." $nFrames]
     
@@ -181,19 +180,19 @@ proc compute {psfPrefix pdbPrefix dcdPrefix xstPrefix outPrefix} {
 
 
 if {$argc < 5} {
-    puts "vmd -dispdev text -e $argv0 -args psfPrefix pdbPrefix dcdPrefix xstPrefix dcdFreq timestep selText dimension l L outPrefix"
+    puts "vmd -dispdev text -e $argv0 -args psfPrefix pdbPrefix dcd xstPrefix dcdFreq timestep selText dimension l L outPrefix"
     exit
 }
 
 set psfPrefix [lindex $argv 0]
 set pdbPrefix [lindex $argv 1]
-set dcdPrefix [lindex $argv 2]
+set dcd       [lindex $argv 2]
 set xstPrefix [lindex $argv 3]
-set dcdFreq [lindex $argv 4]
-set timestep [lindex $argv 5]
+set dcdFreq   [lindex $argv 4]
+set timestep  [lindex $argv 5]
 
 #map the '_' in selection text to ' '
-set selText [lindex $argv 6]
+set selText   [lindex $argv 6]
 set selText   [string map {_ \ } $selText]
 
 set dimension [lindex $argv 7]
@@ -219,7 +218,7 @@ switch -- $dimension {
         set boxL [lindex $xs 9] 
     }
     default {
-        puts "vmd -dispdev text -e $argv0 -args psfPrefix pdbPrefix dcdPrefix xstPrefix dcdFreq timestep selText dimension l L outPrefix"
+        puts "vmd -dispdev text -e $argv0 -args psfPrefix pdbPrefix dcd xstPrefix dcdFreq timestep selText dimension l L outPrefix"
         exit
     }
 }
@@ -232,7 +231,7 @@ set maxL [expr $L / 2.0]
 set minL [expr -1 * $maxL]
 puts "$minL\t$maxL"
 
-compute $psfPrefix $pdbPrefix $dcdPrefix $xstPrefix $outPrefix 
+compute $psfPrefix $pdbPrefix $dcd $xstPrefix $outPrefix 
 
 exit
 
