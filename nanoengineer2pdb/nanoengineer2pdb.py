@@ -1371,7 +1371,7 @@ with open(sys.argv[1], 'r') as inFile:
         # if it reaches 'group'
         if (pattern1.search(line)):
             m1 = pattern1.search(line)
-            if re.search('(Clipboard)', m1.group(1)):
+            if re.search('\(Clipboard\)', m1.group(1)):
             #if m1.group(1) == 'Clipboard':
                 break
 
