@@ -1480,7 +1480,15 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
 
     # if it is the first nucleotide
     else:
-        bond_direction_all = data_df.ix[i + 1]['bond_direction']
+        # In most cases, the next residue will have 'bond_direction'
+        if i + 1 in data_df.index.values and data_df.ix[i + 1]['bond_direction'] != 'NA':
+            bond_direction_all = data_df.ix[i + 1]['bond_direction']
+
+        # If not, find the associated 'bond_direction' from the entire DataFrame
+        else:
+            for j in data_df[ data_df['bond_direction'] != 'NA' ].index.values:
+                if i in data_df.ix[j]['bond_direction']:
+                    bond_direction_all = data_df.ix[j]['bond_direction'] 
 
         if len(bond_direction_all) > 2:
             bond_direction_all = np.reshape(bond_direction_all, (int(len(bond_direction_all) / 2), 2))
@@ -1799,7 +1807,7 @@ for i in data_df[ data_df['p_nt'] == 'NA' ].index.values:
         seg_head[ data_df.ix[i]['segname'] ] = i
 
 seg_head_key = np.sort(list(seg_head.keys()))
-#print(seg_head)
+#print(seg_head_key)
 #print(seg_map)
 #sys.exit(0)
 
@@ -2009,6 +2017,7 @@ with open('chickenwire.for.make_ndx', 'w') as FH:
                     data_df.ix[ri1, 'CW'] = key
                     if ri2 != '' and data_df.ix[ri2]['CW'] == 'NA':
                         data_df.ix[ri2, 'CW'] = key
+
                         FH.write("ri %s %s & 0\n" % (data_df.ix[ri1]['residue'], data_df.ix[ri2]['residue']) )
                         FH.write("name %d %s\n" % (CWatom_num, key))
 
