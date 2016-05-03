@@ -322,6 +322,12 @@ def rotation_bp(k, ind_1, seq_1, ind_2, seq_2, bp_m):
     elif k - 1 in data_df.index.values:   
         head = data_df.ix[k - 1]['xyz']
         tail = data_df.ix[k]['xyz']
+    elif data_df.ix[k]['p_seg'] != 'NA':
+        head = data_df.ix[ data_df.ix[k]['p_seg'] ]['xyz']
+        tail = data_df.ix[k]['xyz']
+    elif data_df.ix[k]['n_seg'] != 'NA':
+        head = data_df.ix[k]['xyz']
+        tail = data_df.ix[ data_df.ix[k]['n_seg'] ]['xyz']
 
     axis_vec = unitVec(head - tail)
 
@@ -1468,9 +1474,9 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
                 bond_direction = bond_direction_all
         
         if bond_direction[0] == i:
-            data_df.ix[i]['direc'] = -1 
+            data_df.ix[i, 'direc'] = -1 
         else:
-            data_df.ix[i]['direc'] = 1
+            data_df.ix[i, 'direc'] = 1
 
     # if it is the first nucleotide
     else:
@@ -1486,9 +1492,9 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
             bond_direction = bond_direction_all
 
         if bond_direction[0] == i:
-            data_df.ix[i]['direc'] = 1 
+            data_df.ix[i, 'direc'] = 1 
         else:
-            data_df.ix[i]['direc'] = -1
+            data_df.ix[i, 'direc'] = -1
 
     # get p_nt, n_nt
     if str(data_df.ix[i]['bond_direction']) != 'NA':
@@ -1496,11 +1502,11 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
         indices, = np.where(bond_direction == i)
         for k in indices:
             if k % 2 == 0:
-                data_df.ix[i]['n_nt'] = bond_direction[k + 1]
-                data_df.ix[ bond_direction[k + 1] ]['p_nt'] = i
+                data_df.ix[i, 'n_nt'] = bond_direction[k + 1]
+                data_df.ix[ bond_direction[k + 1], 'p_nt'] = i
             else:
-                data_df.ix[i]['p_nt'] = bond_direction[k - 1]
-                data_df.ix[ bond_direction[k - 1] ]['n_nt'] = i
+                data_df.ix[i, 'p_nt'] = bond_direction[k - 1]
+                data_df.ix[ bond_direction[k - 1], 'n_nt'] = i
 
 
 ## get connected nucleotides on each elements of DnaSegment
@@ -1514,10 +1520,12 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
         for j in data_df.ix[i]['bond1']:
             if re.search('E[0-9]*', data_df.ix[j]['segname']):
                 if data_df.ix[j]['ntBond'] == 'NA':
-                    data_df.ix[j]['ntBond'] = np.array([], dtype = np.uint16) 
+                    data_df.ix[j, 'ntBond'] = np.array([i], dtype = np.uint16) 
 
-                data_df.ix[j]['ntBond'] = np.append(data_df.ix[j]['ntBond'], i)
-                data_df.ix[i]['E_seg'] = j
+                else:
+                    data_df.set_value(j, 'ntBond', np.append(data_df.ix[j]['ntBond'], i))
+
+                data_df.ix[i, 'E_seg'] = j
 
 
 # parse 'bond1' of the DNA segments
@@ -1527,18 +1535,21 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
         for j in data_df.ix[i]['bond1']:
             if re.search('T[0-9]*', data_df.ix[j]['segname']):
                 if str(data_df.ix[i]['ntBond']) == 'NA':
-                    data_df.ix[i]['ntBond'] = np.array([], dtype = np.uint16)
-                data_df.ix[i]['ntBond'] = np.append(data_df.ix[i]['ntBond'], j)
-                data_df.ix[j]['E_seg'] = i
+                    data_df.ix[i, 'ntBond'] = np.array([j], dtype = np.uint16)
+                else:
+                    data_df.set_value(i, 'ntBond', np.append(data_df.ix[i]['ntBond'], j))
+                data_df.ix[j, 'E_seg'] = i
+
 
     # make sure the ['direc'] in ['ntBond'][0] is 1
-    if data_df.ix[ data_df.ix[i]['ntBond'][0] ]['direc'] == -1:
-        data_df.ix[i]['ntBond'] = data_df.ix[i]['ntBond'][::-1]
+    if data_df.ix[i]['ntBond'] != 'NA' and data_df.ix[ data_df.ix[i]['ntBond'][0] ]['direc'] == -1:
+        data_df.set_value(i, 'ntBond', data_df.ix[i]['ntBond'][::-1])
+
 
     # get b_nt
-    if len(data_df.ix[i]['ntBond']) == 2:
-        data_df.ix[ data_df.ix[i]['ntBond'][0] ]['b_nt'] = data_df.ix[i]['ntBond'][1]
-        data_df.ix[ data_df.ix[i]['ntBond'][1] ]['b_nt'] = data_df.ix[i]['ntBond'][0]
+    if len(data_df.ix[i]['ntBond']) == 2 and isinstance(data_df.ix[i]['ntBond'], np.ndarray):
+        data_df.ix[ data_df.ix[i]['ntBond'][0], 'b_nt'] = data_df.ix[i]['ntBond'][1]
+        data_df.ix[ data_df.ix[i]['ntBond'][1], 'b_nt'] = data_df.ix[i]['ntBond'][0]
 
 
 ## get c_seg
@@ -1554,10 +1565,9 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
 
                 #print(i,j, data_df.ix[j]['p_nt'], data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'])
                 if str(data_df.ix[i]['c_seg']) == 'NA':
-                    data_df.ix[i]['c_seg'] = np.array([ data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'] ])
+                    data_df.ix[i, 'c_seg'] = np.array([ data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'] ])
                 else:
-                    data_df.ix[i]['c_seg'] = np.append(data_df.ix[i]['c_seg'], data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg'])
-
+                    data_df.set_value(i, 'c_seg', np.append(data_df.ix[i]['c_seg'], data_df.ix[ data_df.ix[j]['p_nt'] ]['E_seg']))
 
 
             if data_df.ix[j]['n_nt'] != 'NA' and \
@@ -1566,9 +1576,9 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
 
                 #print(i,j, data_df.ix[j]['n_nt'], data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'])
                 if str(data_df.ix[i]['c_seg']) == 'NA':
-                    data_df.ix[i]['c_seg'] = np.array([ data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'] ])
+                    data_df.ix[i, 'c_seg'] = np.array([ data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'] ])
                 else:
-                    data_df.ix[i]['c_seg'] = np.append(data_df.ix[i]['c_seg'], data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg'])
+                    data_df.set_value(i, 'c_seg', np.append(data_df.ix[i]['c_seg'], data_df.ix[ data_df.ix[j]['n_nt'] ]['E_seg']))
 
 
 count = 0
@@ -1606,13 +1616,13 @@ for k1, v1 in E_index.items():
 ## construct E_df
 E_df = pd.DataFrame(index=np.sort(list(E_index.keys())), columns=['indice'])
 for k, v in E_index.items():
-    E_df.ix[k]['indice'] = v
+    E_df.ix[k, 'indice'] = v
 
 # calculate 'vec' of each E*
 E_df['vec'] = 'NA'
 for i in E_df.index.values:
     vec = unitVec(data_df.ix[ E_df.ix[i]['indice'][0] ]['xyz'] - data_df.ix[ E_df.ix[i]['indice'][1] ]['xyz'])
-    E_df.ix[i]['vec'] = vec
+    E_df.ix[i, 'vec'] = vec
 
 #print(E_df)
 
@@ -1622,7 +1632,7 @@ group = 0
 while len(E_df[ E_df['para_group'] == 'NA' ].index.values) != 0:
     unGroup = E_df[ E_df['para_group'] == 'NA' ].index.values
     if len(unGroup) == 1:
-        E_df.ix[ unGroup[0] ]['para_group'] = group
+        E_df.ix[ unGroup[0], 'para_group'] = group
         break
         
     i = unGroup[0]
@@ -1635,7 +1645,7 @@ while len(E_df[ E_df['para_group'] == 'NA' ].index.values) != 0:
             tmp_group = np.append(tmp_group, j)
     
     for k in tmp_group:
-        E_df.ix[k]['para_group'] = group
+        E_df.ix[k, 'para_group'] = group
     
     group += 1
 
@@ -1651,14 +1661,14 @@ for i in np.unique(E_df['para_group'].values):
     for j in E_df[ E_df['para_group'] == i ].index.values:
         # set the end close to 'start' to be the head
         if E_df.ix[j]['indice'][0] != close_atom(E_df.ix[j]['indice'], start):
-            E_df.ix[j]['indice'] = E_df.ix[j]['indice'][::-1]
+            E_df.ix[j, 'indice'] = E_df.ix[j]['indice'][::-1]
 
 
 # update 'vec' of each E*
 E_df['vec'] = 'NA'
 for i in E_df.index.values:
     vec = unitVec(data_df.ix[ E_df.ix[i]['indice'][0] ]['xyz'] - data_df.ix[ E_df.ix[i]['indice'][1] ]['xyz'])
-    E_df.ix[i]['vec'] = vec
+    E_df.ix[i, 'vec'] = vec
 
 
 # get 'E_ind'
@@ -1669,14 +1679,14 @@ for k1 in E_df.index.values:
 
     for i in range(len(v1)):
         if i == 0:
-            data_df.ix[ v1[i] ]['n_seg'] = v1[i + 1] 
+            data_df.ix[ v1[i], 'n_seg'] = v1[i + 1] 
         elif i == len(v1)-1:
-            data_df.ix[ v1[i] ]['p_seg'] = v1[i - 1] 
+            data_df.ix[ v1[i], 'p_seg'] = v1[i - 1] 
         else:
-            data_df.ix[ v1[i] ]['n_seg'] = v1[i + 1] 
-            data_df.ix[ v1[i] ]['p_seg'] = v1[i - 1] 
+            data_df.ix[ v1[i], 'n_seg'] = v1[i + 1] 
+            data_df.ix[ v1[i], 'p_seg'] = v1[i - 1] 
 
-        data_df.ix[ v1[i] ]['E_ind'] = i
+        data_df.ix[ v1[i], 'E_ind'] = i
 
 #print(data_df)
 #print(data_df[ data_df['segname'] == 'T22' ])
@@ -1698,15 +1708,15 @@ for i in E_df.index.values:
                 # if they are parallel
                 if E_df.ix[i]['para_group'] == E_df.ix[ data_df.ix[k]['segname'] ]['para_group']:
                     if isinstance(E_df.ix[i]['nn'], str):
-                        E_df.ix[i]['nn'] = np.array([data_df.ix[k]['segname'], j, data_df.ix[j]['E_ind'], k, data_df.ix[k]['E_ind']])
+                        E_df.ix[i, 'nn'] = np.array([data_df.ix[k]['segname'], j, data_df.ix[j]['E_ind'], k, data_df.ix[k]['E_ind']])
                     else:
-                        E_df.ix[i]['nn'] = np.append(E_df.ix[i]['nn'], [data_df.ix[k]['segname'], j, data_df.ix[j]['E_ind'], k, data_df.ix[k]['E_ind']])
+                        E_df.set_value(i, 'nn', np.append(E_df.ix[i]['nn'], [data_df.ix[k]['segname'], j, data_df.ix[j]['E_ind'], k, data_df.ix[k]['E_ind']]))
 
 
 for i in E_df.index.values:
     if isinstance(E_df.ix[i]['nn'], np.ndarray):
         tmp = np.reshape(E_df.ix[i]['nn'], (int(len(E_df.ix[i]['nn']) / 5), 5))
-        E_df.ix[i]['nn'] = tmp[ np.argsort(tmp[:,0]) ]
+        E_df.ix[i, 'nn'] = tmp[ np.argsort(tmp[:,0]) ]
 
 #print(E_df) 
 #sys.exit(0)
@@ -1718,13 +1728,13 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
     if data_df.ix[i]['seq'] == 'NA':
         #print(i)
         if data_df.ix[i]['b_nt'] != 'NA' and data_df.ix[ data_df.ix[i]['b_nt'] ]['seq'] != 'NA':
-            data_df.ix[i]['seq'] = wc(data_df.ix[ data_df.ix[i]['b_nt'] ]['seq'])
+            data_df.ix[i, 'seq'] = wc(data_df.ix[ data_df.ix[i]['b_nt'] ]['seq'])
 
         else:
             print('Sequence not found: ', end="")
             print('%d in segname %s, '% (i, data_df.ix[i]['segname']), end="")
             print('replace with T')
-            data_df.ix[i]['seq'] = 'T'
+            data_df.ix[i, 'seq'] = 'T'
             count += 1
 
 print('%d nucleoditides are guessed.' % count)
@@ -1736,7 +1746,7 @@ data_df['xyz_aa'] = 'NA'
 for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
 
     # if double-strand
-    if len(data_df.ix[i]['ntBond']) == 2:
+    if len(data_df.ix[i]['ntBond']) == 2 and isinstance(data_df.ix[i]['ntBond'], np.ndarray):
 
         # find coorsponding seq
         ind_1 = data_df.ix[i]['ntBond'][0]
@@ -1757,8 +1767,8 @@ for i in data_df[ data_df['segname'].str.contains('E[0-9]*') ].index.values:
         bp_m_r = rotation_bp(i, ind_1, seq_1, ind_2, seq_2, bp_m)            
 
         # assign coordinates to each residue in DnaStrand
-        data_df.ix[ind_1]['xyz_aa'] = bp_m_r[seq_1]
-        data_df.ix[ind_2]['xyz_aa'] = bp_m_r[seq_2]
+        data_df.set_value(ind_1, 'xyz_aa', bp_m_r[seq_1])
+        data_df.set_value(ind_2, 'xyz_aa', bp_m_r[seq_2])
             
 
 ## then, single-stranded region
@@ -1771,7 +1781,7 @@ for i in data_df[ data_df['segname'].str.contains('T[0-9]*') ].index.values:
     
         # Rotation
         #print(i)
-        data_df.ix[i]['xyz_aa'] = rotation_nt(i, pdb_m) 
+        data_df.set_value(i, 'xyz_aa', rotation_nt(i, pdb_m)) 
 
 #print(data_df)
 #sys.exit(0)
@@ -1816,7 +1826,7 @@ with open(sys.argv[2], 'w') as out:
             if data_df.ix[rid]['xyz_aa'] != 'NA':
 
                 residue += 1
-                data_df.ix[rid]['residue'] = residue
+                data_df.ix[rid, 'residue'] = residue
 
                 for aname, coor in data_df.ix[rid]['xyz_aa'].items():
                     index += 1
@@ -1996,9 +2006,9 @@ with open('chickenwire.for.make_ndx', 'w') as FH:
 
                     CWatoms_hash[key] = CWatom_num
 
-                    data_df.ix[ri1]['CW'] = key
+                    data_df.ix[ri1, 'CW'] = key
                     if ri2 != '' and data_df.ix[ri2]['CW'] == 'NA':
-                        data_df.ix[ri2]['CW'] = key
+                        data_df.ix[ri2, 'CW'] = key
                         FH.write("ri %s %s & 0\n" % (data_df.ix[ri1]['residue'], data_df.ix[ri2]['residue']) )
                         FH.write("name %d %s\n" % (CWatom_num, key))
 
@@ -2059,7 +2069,7 @@ with open('chickenwire.for.make_ndx', 'w') as FH:
                     CWatoms_hash[key] = CWatom_num
 
                     # if E_seg does not exist, it must be ssDNA
-                    data_df.ix[ri1]['CW'] = key
+                    data_df.ix[ri1, 'CW'] = key
                     FH.write("ri %s %s & 0\n" % (data_df.ix[ri1]['residue'], '') )
                     FH.write("name %d %s\n" % (CWatom_num, key))
 
