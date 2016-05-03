@@ -1,12 +1,11 @@
 
 
-proc RMSD {psfPrefix dcdPrefix xstPrefix lipidResname dim interval R timestep outPut} {
+proc RMSD {psfPrefix dcd xstPrefix lipidResname dim interval R timestep outPut} {
 
     package require pbctools
 
     # Input:
     set psf $psfPrefix.psf
-    set dcd $dcdPrefix.dcd
 
     switch -- $dim {
     
@@ -82,12 +81,12 @@ proc RMSD {psfPrefix dcdPrefix xstPrefix lipidResname dim interval R timestep ou
 
 
 if {$argc < 8} {
-    puts "vmd -dispdev text -e $argv0 -args psfPrefix dcdPrefix xstPrefix lipidResname dim interval R timestep outPut"
+    puts "vmd -dispdev text -e $argv0 -args psfPrefix dcd xstPrefix lipidResname dim interval R timestep outPut"
     exit
 }
 
 set psfPrefix    [lindex $argv 0]
-set dcdPrefix    [lindex $argv 1]
+set dcd          [lindex $argv 1]
 set xstPrefix    [lindex $argv 2]
 set lipidResname [lindex $argv 3]
 set dim          [lindex $argv 4]
@@ -96,7 +95,7 @@ set R            [lindex $argv 6]
 set timestep     [lindex $argv 7]
 set outPut       [lindex $argv 8]
 
-RMSD $psfPrefix $dcdPrefix $xstPrefix $lipidResname $dim $interval $R $timestep $outPut
+RMSD $psfPrefix $dcd $xstPrefix $lipidResname $dim $interval $R $timestep $outPut
 
 exit
 
