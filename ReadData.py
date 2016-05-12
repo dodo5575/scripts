@@ -42,7 +42,7 @@ def loadAscii(fileName):
     for counter in range(numLines):
         theLine=removeBlanksFromList(splitter.split(theLines[counter]))
         if len(theLine)!=lineSize:
-            print "All lines are not the same size in",fileName 
+            print("All lines are not the same size in",fileName)
             #abort()
         else:
             if lineSize>1:
