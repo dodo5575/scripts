@@ -26,7 +26,7 @@ color Segname T6 cyan
 
 mol addrep $id3
 mol modcolor 0 $id3 SegName
-mol modstyle 0 $id3 NewCartoon 0.900000 10.000000 1.000000 0
+mol modstyle 0 $id3 NewCartoon 0.900000 50.000000 1.000000 0
 #mol modstyle 0 $id3 Surf 1.00000 0.000000
 mol modselect 0 $id3 backbone
 mol modmaterial 0 $id3 AOChalky
@@ -38,7 +38,7 @@ mol addrep $id3
 mol modcolor 1 $id3 SegName
 mol modstyle 1 $id3 Licorice 0.300000 50.000000 50.000000
 mol modselect 1 $id3 not backbone and noh
-mol modmaterial 1 $id3 AOChalky
+mol modmaterial 1 $id3 Glossy
 #mol showperiodic $id3 1 yY
 #mol numperiodic $id3 1 6
 #mol smoothrep $id3 1 5
