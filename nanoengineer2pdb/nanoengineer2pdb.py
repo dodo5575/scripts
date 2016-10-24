@@ -400,16 +400,24 @@ def rotation_nt(rid, pdb):
     ## alignBaseNormal
     if 'axis_vec' not in locals():
         if central + 1 in data_df.index.values:
-            head = data_df.ix[central]['xyz']
-            tail = data_df.ix[central + 1]['xyz']
+            head = data_df.ix[central, 'xyz']
+            tail = data_df.ix[central + 1, 'xyz']
             axis_vec = unitVec(head - tail)
         elif central - 1 in data_df.index.values:   
-            head = data_df.ix[central - 1]['xyz']
-            tail = data_df.ix[central]['xyz']
+            head = data_df.ix[central - 1, 'xyz']
+            tail = data_df.ix[central, 'xyz']
             axis_vec = unitVec(head - tail)
+        elif data_df.ix[central, 'p_seg'] != 'NA':
+            head = data_df.ix[ data_df.ix[central, 'p_seg'], 'xyz']
+            tail = data_df.ix[central, 'xyz']
+            axis_vec = unitVec(head - tail)
+        elif data_df.ix[central, 'n_seg'] != 'NA':
+            head = data_df.ix[central, 'xyz']
+            tail = data_df.ix[ data_df.ix[central, 'n_seg'], 'xyz']
+            axis_vec = unitVec(head - tail)
+        else:
+            raise Exception("rotation_nt(rid, pdb): Cannot define axis direction:\nrid = %s\ncentral = %s\ncentral's p_seg = %s\ncentral's n_seg = %s\n" % (rid, central, data_df.ix[central, 'p_seg'], data_df.ix[central, 'n_seg']))
 
-#        else:
-#            raise Exception("rotation(group, rid, moved_pdb): Cannot define axis direction:\ngroup = %s\nrid = %s\ncentral = %s" % (group, rid, central))
 
     BaseNormal_array = direc * unitVec(getBaseNormal(pdb_r, seq))
 
