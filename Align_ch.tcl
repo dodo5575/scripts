@@ -47,7 +47,7 @@ proc AlignWrap {psfPrefix pdbPrefix dcdPrefix selText outPut} {
         puts "frame $i" 
     }
 
-    pbc wrap -all -sel "not nucleic" -compound residue -center origin
+    #pbc wrap -all -sel "not nucleic" -compound residue -center origin
     
 
     animate write dcd ${outPut}.dcd waitfor all top
